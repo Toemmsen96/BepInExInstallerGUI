@@ -16,13 +16,17 @@ GUI - Tool to install BepInEx and plugins into games
 <summary>Click to view screenshots</summary>
 
 ![Install View](.ghreadme/install.png)
+
 _Install Tab_
 
 ![Uninstall View](.ghreadme/uninstall.png)
+
 _Uninstall Tab_
 
 ![Info View](.ghreadme/info.png)
-_Info Tab_
+
+_Info Tab_  
+
 
 </details>
 
