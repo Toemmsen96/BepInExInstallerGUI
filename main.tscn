@@ -52,9 +52,11 @@ text = "Select game to install to"
 
 [node name="OptionButton" type="OptionButton" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
 layout_mode = 2
+tooltip_text = "Select one from the Steam detected games here to install BepInEx into"
 
 [node name="pick" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
 layout_mode = 2
+tooltip_text = "If your game is not detected automatically, select it using the file-dialog"
 text = "Pick Gamefiles manually"
 
 [node name="FileDialog" type="FileDialog" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
@@ -62,17 +64,20 @@ oversampling_override = 1.0
 
 [node name="LogCheck" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
 layout_mode = 2
+tooltip_text = "Toggle if the installer should show logs"
 theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
 button_pressed = true
 text = "Log output"
 
 [node name="CheckBox" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
 layout_mode = 2
+tooltip_text = "Toggle if the log output should be verbose or just simple output"
 theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
 text = "Verbose output"
 
 [node name="PluginsCheckBox2" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
 layout_mode = 2
+tooltip_text = "toggle to select a plugin.zip file containing the .dll files to install"
 theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
 text = "Install Plugins
 "
@@ -87,16 +92,19 @@ filters = PackedStringArray("*.zip ; Zip Files")
 
 [node name="Install" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
 layout_mode = 2
+tooltip_text = "Install BepInEx with the selected settings"
 theme_override_colors/font_color = Color(0.55153227, 0.9798047, 0.7516775, 1)
 text = "Install"
 
 [node name="adv" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
 layout_mode = 2
+tooltip_text = "Show advanced options"
 theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
 text = "Advanced Options"
 
 [node name="ConsoleCheckBox" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
 layout_mode = 2
+tooltip_text = "Enable the BepInEx Console to see it's ouput"
 theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
 text = "Enable BepInEx Console"
 
@@ -108,6 +116,7 @@ placeholder_text = "advanced commands here..."
 custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
 size_flags_vertical = 3
+tooltip_text = "Installer Logs"
 
 [node name="LogOutput" type="RichTextLabel" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer/ScrollContainer"]
 layout_mode = 2
@@ -137,6 +146,7 @@ layout_mode = 2
 
 [node name="Select game" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
 layout_mode = 2
+tooltip_text = "Select game from detected Steam games with installed BepInEx"
 text = "Select game to uninstall from"
 
 [node name="OptionButton" type="OptionButton" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
