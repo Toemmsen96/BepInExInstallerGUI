@@ -14,12 +14,17 @@ public partial class Main : Control
 	private OptionButton _gameOptionButton;
 	private Button _pickManualButton;
 	private FileDialog _fileDialog;
+	private CheckBox _logCheckbox;
 	private CheckBox _verboseCheckbox;
 	private CheckBox _consoleCheckbox;
+	private CheckBox _pluginsCheckbox;
+	private FileDialog _pluginsFileDialog;
 	private Button _installButton;
 	private CheckBox _advancedCheckbox;
 	private LineEdit _advancedCommandsLineEdit;
+	private ScrollContainer _scrollContainer;
 	private RichTextLabel _logOutput;
+	private ProgressBar _progressBar;
 	
 	// UI References - Uninstall Tab
 	private OptionButton _uninstallGameOptionButton;
@@ -37,6 +42,7 @@ public partial class Main : Control
 	
 	private string _selectedGamePath = null;
 	private string _selectedUninstallGamePath = null;
+	private string _selectedPluginZipPath = null;
 
 	public override void _Ready()
 	{
@@ -85,7 +91,7 @@ public partial class Main : Control
 		
 		_installer.OnProgress = (progress) => 
 		{
-			// TODO: Update progress bar if you add one
+			CallDeferred(nameof(UpdateProgress), progress);
 		};
 	}
 
@@ -95,12 +101,17 @@ public partial class Main : Control
 		_gameOptionButton = GetNode<OptionButton>("PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer/OptionButton");
 		_pickManualButton = GetNode<Button>("PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer/pick");
 		_fileDialog = GetNode<FileDialog>("PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer/FileDialog");
+		_logCheckbox = GetNode<CheckBox>("PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer/LogCheck");
 		_verboseCheckbox = GetNode<CheckBox>("PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer/CheckBox");
 		_consoleCheckbox = GetNode<CheckBox>("PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer/ConsoleCheckBox");
+		_pluginsCheckbox = GetNode<CheckBox>("PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer/PluginsCheckBox2");
+		_pluginsFileDialog = GetNode<FileDialog>("PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer/PluginsCheckBox2/FileDialog");
 		_installButton = GetNode<Button>("PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer/Install");
 		_advancedCheckbox = GetNode<CheckBox>("PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer/adv");
 		_advancedCommandsLineEdit = GetNode<LineEdit>("PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer/cmds");
+		_scrollContainer = GetNode<ScrollContainer>("PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer/ScrollContainer");
 		_logOutput = GetNode<RichTextLabel>("PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer/ScrollContainer/LogOutput");
+		_progressBar = GetNode<ProgressBar>("PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer/ProgressBar");
 		
 		// Uninstall tab references
 		_uninstallGameOptionButton = GetNode<OptionButton>("PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer/OptionButton");
@@ -121,12 +132,15 @@ public partial class Main : Control
 		_fileDialog.Access = FileDialog.AccessEnum.Filesystem;
 		_fileDialog.Title = "Select Game Directory";
 		
+		_pluginsFileDialog.Access = FileDialog.AccessEnum.Filesystem;
+		
 		_uninstallFileDialog.FileMode = FileDialog.FileModeEnum.OpenDir;
 		_uninstallFileDialog.Access = FileDialog.AccessEnum.Filesystem;
 		_uninstallFileDialog.Title = "Select Game Directory to Uninstall From";
 		
 		// Hide advanced commands by default
 		_advancedCommandsLineEdit.Visible = false;
+		_consoleCheckbox.Visible = false; 
 		
 		// Clear option buttons immediately to prevent duplicates
 		_gameOptionButton.Clear();
@@ -145,8 +159,11 @@ public partial class Main : Control
 		_pickManualButton.Pressed += OnPickManualPressed;
 		_fileDialog.DirSelected += OnDirectorySelected;
 		_installButton.Pressed += OnInstallPressed;
+		_logCheckbox.Toggled += OnLogCheckToggled;
 		_verboseCheckbox.Toggled += OnVerboseToggled;
 		_consoleCheckbox.Toggled += OnConsoleToggled;
+		_pluginsCheckbox.Toggled += OnPluginsToggled;
+		_pluginsFileDialog.FileSelected += OnPluginFileSelected;
 		_advancedCheckbox.Toggled += OnAdvancedToggled;
 		
 		// Uninstall tab signals
@@ -234,11 +251,13 @@ public partial class Main : Control
 		if (index <= 0 || _games == null || index > _games.Count)
 		{
 			_selectedGamePath = null;
+			_pickManualButton.Visible = true;
 			return;
 		}
 		
 		var game = _games[(int)index - 1];
 		_selectedGamePath = game.InstallPath;
+		_pickManualButton.Visible = false;
 		AppendLog($"[color=cyan]Selected: {game.Name}[/color]");
 		AppendLog($"[color=gray]Path: {_selectedGamePath}[/color]");
 	}
@@ -251,6 +270,7 @@ public partial class Main : Control
 	private void OnDirectorySelected(string dir)
 	{
 		_selectedGamePath = dir;
+		_pickManualButton.Visible = false;
 		AppendLog($"[color=cyan]Manually selected directory:[/color]");
 		AppendLog($"[color=gray]{dir}[/color]");
 	}
@@ -266,6 +286,7 @@ public partial class Main : Control
 		_isUninstallMode = false;
 		_installButton.Disabled = true;
 		_installButton.Text = "Installing...";
+		_progressBar.Value = 0;
 		
 		AppendLog("[color=cyan]========== Starting Installation ==========[/color]");
 		
@@ -274,6 +295,22 @@ public partial class Main : Control
 		if (success)
 		{
 			AppendLog("[color=lime]========== Installation Complete! ==========[/color]");
+			
+			// Install plugins if a zip was selected
+			if (!string.IsNullOrEmpty(_selectedPluginZipPath))
+			{
+				AppendLog("[color=cyan]========== Installing Plugins ==========[/color]");
+				bool pluginSuccess = await _installer.InstallPluginsAsync(_selectedGamePath, _selectedPluginZipPath);
+				
+				if (pluginSuccess)
+				{
+					AppendLog("[color=lime]========== Plugin Installation Complete! ==========[/color]");
+				}
+				else
+				{
+					AppendLog("[color=red]========== Plugin Installation Failed ==========[/color]");
+				}
+			}
 		}
 		else
 		{
@@ -282,6 +319,12 @@ public partial class Main : Control
 		
 		_installButton.Disabled = false;
 		_installButton.Text = "Install";
+	}
+
+	private void OnLogCheckToggled(bool pressed)
+	{
+		_verboseCheckbox.Visible = pressed;
+		_scrollContainer.Visible = pressed;
 	}
 
 	private void OnVerboseToggled(bool pressed)
@@ -299,6 +342,27 @@ public partial class Main : Control
 	private void OnAdvancedToggled(bool pressed)
 	{
 		_advancedCommandsLineEdit.Visible = pressed;
+		_consoleCheckbox.Visible = pressed;
+	}
+
+	private void OnPluginsToggled(bool pressed)
+	{
+		if (pressed)
+		{
+			_pluginsFileDialog.PopupCentered(new Vector2I(600, 400));
+		}
+		else
+		{
+			_selectedPluginZipPath = null;
+			AppendLog("[color=yellow]Plugin installation disabled[/color]");
+		}
+	}
+
+	private void OnPluginFileSelected(string path)
+	{
+		_selectedPluginZipPath = path;
+		AppendLog($"[color=cyan]Selected plugin zip:[/color]");
+		AppendLog($"[color=gray]{path}[/color]");
 	}
 
 	private void OnUninstallGameSelected(long index)
@@ -306,11 +370,13 @@ public partial class Main : Control
 		if (index <= 0 || _gamesWithBepInEx == null || index > _gamesWithBepInEx.Count)
 		{
 			_selectedUninstallGamePath = null;
+			_uninstallPickManualButton.Visible = true;
 			return;
 		}
 		
 		var game = _gamesWithBepInEx[(int)index - 1];
 		_selectedUninstallGamePath = game.InstallPath;
+		_uninstallPickManualButton.Visible = false;
 		AppendUninstallLog($"[color=cyan]Selected: {game.Name}[/color]");
 		AppendUninstallLog($"[color=gray]Path: {_selectedUninstallGamePath}[/color]");
 	}
@@ -323,6 +389,7 @@ public partial class Main : Control
 	private void OnUninstallDirectorySelected(string dir)
 	{
 		_selectedUninstallGamePath = dir;
+		_uninstallPickManualButton.Visible = false;
 		AppendUninstallLog($"[color=cyan]Manually selected directory:[/color]");
 		AppendUninstallLog($"[color=gray]{dir}[/color]");
 	}
@@ -385,6 +452,14 @@ public partial class Main : Control
 		else
 		{
 			GD.Print(message);
+		}
+	}
+
+	private void UpdateProgress(double progress)
+	{
+		if (_progressBar != null)
+		{
+			_progressBar.Value = progress * 100;
 		}
 	}
 

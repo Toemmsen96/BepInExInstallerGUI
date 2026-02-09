@@ -12,6 +12,7 @@ grow_vertical = 2
 script = ExtResource("1_ig7tw")
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
+self_modulate = Color(1, 1, 1, 0)
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -31,6 +32,7 @@ layout_mode = 2
 current_tab = 0
 
 [node name="Install" type="PanelContainer" parent="PanelContainer/MarginContainer/TabContainer"]
+self_modulate = Color(1, 1, 1, 0)
 layout_mode = 2
 metadata/_tab_index = 0
 
@@ -58,15 +60,30 @@ text = "Pick Gamefiles manually"
 [node name="FileDialog" type="FileDialog" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
 oversampling_override = 1.0
 
+[node name="LogCheck" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
+button_pressed = true
+text = "Log output"
+
 [node name="CheckBox" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
 text = "Verbose output"
 
-[node name="ConsoleCheckBox" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
+[node name="PluginsCheckBox2" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
-text = "Enable BepInEx Console"
+text = "Install Plugins
+"
+
+[node name="FileDialog" type="FileDialog" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer/PluginsCheckBox2"]
+oversampling_override = 1.0
+title = "Open a File"
+size = Vector2i(600, 400)
+ok_button_text = "Select"
+file_mode = 0
+filters = PackedStringArray("*.zip ; Zip Files")
 
 [node name="Install" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
 layout_mode = 2
@@ -78,8 +95,14 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
 text = "Advanced Options"
 
+[node name="ConsoleCheckBox" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
+text = "Enable BepInEx Console"
+
 [node name="cmds" type="LineEdit" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
 layout_mode = 2
+placeholder_text = "advanced commands here..."
 
 [node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
 custom_minimum_size = Vector2(0, 200)
@@ -93,8 +116,12 @@ size_flags_vertical = 3
 bbcode_enabled = true
 scroll_following = true
 
+[node name="ProgressBar" type="ProgressBar" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+
 [node name="Uninstall" type="PanelContainer" parent="PanelContainer/MarginContainer/TabContainer"]
 visible = false
+self_modulate = Color(1, 1, 1, 0)
 layout_mode = 2
 metadata/_tab_index = 1
 
@@ -134,7 +161,6 @@ theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
 text = "Enable BepInEx Console"
 
 [node name="Install" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
-custom_minimum_size = Vector2(0, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.979804, 0.551532, 0.539867, 1)
 text = "Uninstall"
@@ -163,6 +189,7 @@ scroll_following = true
 
 [node name="Info" type="PanelContainer" parent="PanelContainer/MarginContainer/TabContainer"]
 visible = false
+self_modulate = Color(1, 1, 1, 0)
 layout_mode = 2
 metadata/_tab_index = 2
 
@@ -180,7 +207,8 @@ layout_mode = 2
 layout_mode = 2
 text = "Credits:
 - Toemmsen96: Creation of UI, Linux Support, IL2CPP Support, Complete Rework
-- aedenthorn"
+- aedenthorn: Windows Base
+- ChatGPT: Logo"
 
 [node name="made with" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Info/MarginContainer/VBoxContainer"]
 layout_mode = 2

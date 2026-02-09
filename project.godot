@@ -22,3 +22,7 @@ config/icon="uid://8o700vb55xb7"
 [dotnet]
 
 project/assembly_name="BepInExInstaller"
+
+[rendering]
+
+environment/defaults/default_clear_color=Color(0.47058824, 0.47058824, 0.47058824, 0)
