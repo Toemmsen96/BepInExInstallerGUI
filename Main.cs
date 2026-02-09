@@ -30,6 +30,7 @@ public partial class Main : Control
 	private OptionButton _uninstallGameOptionButton;
 	private Button _uninstallPickManualButton;
 	private FileDialog _uninstallFileDialog;
+	private CheckBox _uninstallKeepPluginsCheckbox;
 	private CheckBox _uninstallVerboseCheckbox;
 	private Button _uninstallButton;
 	private RichTextLabel _uninstallLogOutput;
@@ -117,6 +118,7 @@ public partial class Main : Control
 		_uninstallGameOptionButton = GetNode<OptionButton>("PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer/OptionButton");
 		_uninstallPickManualButton = GetNode<Button>("PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer/pick");
 		_uninstallFileDialog = GetNode<FileDialog>("PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer/FileDialog");
+		_uninstallKeepPluginsCheckbox = GetNode<CheckBox>("PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer/KeepPluginsCheck");
 		_uninstallVerboseCheckbox = GetNode<CheckBox>("PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer/CheckBox");
 		_uninstallButton = GetNode<Button>("PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer/Install");
 		_uninstallLogOutput = GetNode<RichTextLabel>("PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer/ScrollContainer/LogOutput");
@@ -219,7 +221,7 @@ public partial class Main : Control
 		// Get all games and filter for those with BepInEx
 		var allGames = await _installer.GetInstalledGamesAsync();
 		_gamesWithBepInEx = allGames.Where(game => 
-			System.IO.Directory.Exists(System.IO.Path.Combine(game.InstallPath, "BepInEx"))
+			_installer.IsBepInExInstalled(game.InstallPath)
 		).ToList();
 		
 		// Clear existing items
@@ -311,6 +313,9 @@ public partial class Main : Control
 					AppendLog("[color=red]========== Plugin Installation Failed ==========[/color]");
 				}
 			}
+			
+			// Refresh the uninstall tab's game list
+			LoadInstalledBepInExGamesAsync();
 		}
 		else
 		{
@@ -408,7 +413,8 @@ public partial class Main : Control
 		
 		AppendUninstallLog("[color=cyan]========== Starting Uninstallation ==========[/color]");
 		
-		bool success = await _installer.UninstallBepInExAsync(_selectedUninstallGamePath);
+		bool keepPlugins = _uninstallKeepPluginsCheckbox.ButtonPressed;
+		bool success = await _installer.UninstallBepInExAsync(_selectedUninstallGamePath, keepPlugins);
 		
 		if (success)
 		{

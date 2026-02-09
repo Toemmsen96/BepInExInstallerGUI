@@ -29,9 +29,10 @@ theme_override_constants/margin_bottom = 5
 
 [node name="TabContainer" type="TabContainer" parent="PanelContainer/MarginContainer"]
 layout_mode = 2
-current_tab = 0
+current_tab = 1
 
 [node name="Install" type="PanelContainer" parent="PanelContainer/MarginContainer/TabContainer"]
+visible = false
 self_modulate = Color(1, 1, 1, 0)
 layout_mode = 2
 metadata/_tab_index = 0
@@ -129,7 +130,6 @@ scroll_following = true
 layout_mode = 2
 
 [node name="Uninstall" type="PanelContainer" parent="PanelContainer/MarginContainer/TabContainer"]
-visible = false
 self_modulate = Color(1, 1, 1, 0)
 layout_mode = 2
 metadata/_tab_index = 1
@@ -158,6 +158,12 @@ text = "Pick Gamefiles manually"
 
 [node name="FileDialog" type="FileDialog" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
 oversampling_override = 1.0
+
+[node name="KeepPluginsCheck" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
+button_pressed = true
+text = "Keep Plugins"
 
 [node name="CheckBox" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
 layout_mode = 2

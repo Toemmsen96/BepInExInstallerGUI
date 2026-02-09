@@ -543,25 +543,59 @@ namespace BepInExInstaller
         /// <summary>
         /// Uninstall BepInEx from game directory
         /// </summary>
-        public async Task<bool> UninstallBepInExAsync(string gamePath)
+        public async Task<bool> UninstallBepInExAsync(string gamePath, bool keepPlugins = false)
         {
-            return await Task.Run(() => UninstallBepInEx(gamePath));
+            return await Task.Run(() => UninstallBepInEx(gamePath, keepPlugins));
         }
 
-        private bool UninstallBepInEx(string gamePath)
+        private bool UninstallBepInEx(string gamePath, bool keepPlugins = false)
         {
             try
             {
-                if (!Directory.Exists(Path.Combine(gamePath, "BepInEx")))
+                if (!IsBepInExInstalled(gamePath))
                 {
-                    LogError("BepInEx is not installed in this directory.");
+                    LogError("BepInEx is not properly installed in this directory.");
                     return false;
                 }
 
                 Log("Uninstalling BepInEx...");
                 
+                string bepInExPath = Path.Combine(gamePath, "BepInEx");
+                string pluginsPath = Path.Combine(bepInExPath, "plugins");
+                string tempPluginsPath = null;
+                
+                // Backup plugins folder if keepPlugins is true
+                if (keepPlugins && Directory.Exists(pluginsPath))
+                {
+                    tempPluginsPath = Path.Combine(Path.GetTempPath(), "BepInEx_plugins_backup_" + Guid.NewGuid().ToString());
+                    LogVerbose($"Backing up plugins folder to: {tempPluginsPath}");
+                    DirectoryCopy(pluginsPath, tempPluginsPath, true);
+                    Log("Plugins folder backed up.");
+                }
+                
                 LogVerbose("Deleting BepInEx folder");
-                Directory.Delete(Path.Combine(gamePath, "BepInEx"), true);
+                Directory.Delete(bepInExPath, true);
+                
+                // Restore plugins folder if it was backed up
+                if (keepPlugins && tempPluginsPath != null)
+                {
+                    Directory.CreateDirectory(bepInExPath);
+                    string newPluginsPath = Path.Combine(bepInExPath, "plugins");
+                    LogVerbose($"Restoring plugins folder");
+                    DirectoryCopy(tempPluginsPath, newPluginsPath, true);
+                    
+                    // Clean up temp backup
+                    try
+                    {
+                        Directory.Delete(tempPluginsPath, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogVerbose($"Warning: Could not delete temp backup: {ex.Message}", MessageType.Warning);
+                    }
+                    
+                    Log("Plugins folder restored.");
+                }
                 
                 string winhttpDll = Path.Combine(gamePath, "winhttp.dll");
                 if (File.Exists(winhttpDll))
@@ -595,6 +629,44 @@ namespace BepInExInstaller
         }
 
         // Helper methods
+        
+        /// <summary>
+        /// Checks if BepInEx is properly installed by verifying all required files exist
+        /// </summary>
+        public bool IsBepInExInstalled(string gamePath)
+        {
+            if (!Directory.Exists(gamePath))
+                return false;
+            
+            // Check for BepInEx folder
+            string bepInExPath = Path.Combine(gamePath, "BepInEx");
+            if (!Directory.Exists(bepInExPath))
+                return false;
+            
+            // Check for core folder (required)
+            if (!Directory.Exists(Path.Combine(bepInExPath, "core")))
+                return false;
+            
+            // Check for config or plugins folder (at least one must exist)
+            bool hasConfigOrPlugins = Directory.Exists(Path.Combine(bepInExPath, "config")) ||
+                                     Directory.Exists(Path.Combine(bepInExPath, "plugins"));
+            if (!hasConfigOrPlugins)
+                return false;
+            
+            // Check for winhttp.dll or doorstop loader
+            bool hasLoader = File.Exists(Path.Combine(gamePath, "winhttp.dll")) ||
+                           File.Exists(Path.Combine(gamePath, "doorstop_config.ini"));
+            
+            if (!hasLoader)
+                return false;
+            
+            // Check for core BepInEx DLL
+            string[] coreFiles = Directory.GetFiles(Path.Combine(bepInExPath, "core"), "BepInEx*.dll", SearchOption.TopDirectoryOnly);
+            if (coreFiles.Length == 0)
+                return false;
+            
+            return true;
+        }
         
         private bool IsGameDirectoryValid(string gamePath)
         {
@@ -796,6 +868,36 @@ namespace BepInExInstaller
             string installDir = installDirMatch.Success ? installDirMatch.Groups[1].Value : string.Empty;
 
             return (appId, name, installDir);
+        }
+
+        private void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
+        {
+            DirectoryInfo dir = new DirectoryInfo(sourceDirName);
+
+            if (!dir.Exists)
+            {
+                throw new DirectoryNotFoundException($"Source directory does not exist or could not be found: {sourceDirName}");
+            }
+
+            DirectoryInfo[] dirs = dir.GetDirectories();
+
+            Directory.CreateDirectory(destDirName);
+
+            FileInfo[] files = dir.GetFiles();
+            foreach (FileInfo file in files)
+            {
+                string tempPath = Path.Combine(destDirName, file.Name);
+                file.CopyTo(tempPath, true);
+            }
+
+            if (copySubDirs)
+            {
+                foreach (DirectoryInfo subdir in dirs)
+                {
+                    string tempPath = Path.Combine(destDirName, subdir.Name);
+                    DirectoryCopy(subdir.FullName, tempPath, copySubDirs);
+                }
+            }
         }
     }
 }
