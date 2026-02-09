@@ -28,10 +28,9 @@ theme_override_constants/margin_bottom = 5
 
 [node name="TabContainer" type="TabContainer" parent="PanelContainer/MarginContainer"]
 layout_mode = 2
-current_tab = 2
+current_tab = 0
 
 [node name="Install" type="PanelContainer" parent="PanelContainer/MarginContainer/TabContainer"]
-visible = false
 layout_mode = 2
 metadata/_tab_index = 0
 
@@ -51,9 +50,6 @@ text = "Select game to install to"
 
 [node name="OptionButton" type="OptionButton" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
 layout_mode = 2
-item_count = 1
-popup/item_0/text = "no game selected"
-popup/item_0/id = 0
 
 [node name="pick" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
 layout_mode = 2
@@ -102,7 +98,71 @@ visible = false
 layout_mode = 2
 metadata/_tab_index = 1
 
+[node name="MarginContainer2" type="MarginContainer" parent="PanelContainer/MarginContainer/TabContainer/Uninstall"]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2"]
+layout_mode = 2
+
+[node name="Select game" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+text = "Select game to uninstall from"
+
+[node name="OptionButton" type="OptionButton" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+
+[node name="pick" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+text = "Pick Gamefiles manually"
+
+[node name="FileDialog" type="FileDialog" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
+oversampling_override = 1.0
+
+[node name="CheckBox" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
+text = "Verbose output"
+
+[node name="ConsoleCheckBox" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
+text = "Enable BepInEx Console"
+
+[node name="Install" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.979804, 0.551532, 0.539867, 1)
+text = "Uninstall"
+
+[node name="adv" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
+text = "Advanced Options"
+
+[node name="cmds" type="LineEdit" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
+visible = false
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="LogOutput" type="RichTextLabel" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+bbcode_enabled = true
+scroll_following = true
+
 [node name="Info" type="PanelContainer" parent="PanelContainer/MarginContainer/TabContainer"]
+visible = false
 layout_mode = 2
 metadata/_tab_index = 2
 

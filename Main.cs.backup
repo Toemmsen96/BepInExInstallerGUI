@@ -8,7 +8,6 @@ public partial class Main : Control
 {
 	private InstallerBackend _installer;
 	private List<InstallerBackend.GameInfo> _games;
-	private List<InstallerBackend.GameInfo> _gamesWithBepInEx;
 	
 	// UI References - Install Tab
 	private OptionButton _gameOptionButton;
@@ -48,16 +47,11 @@ public partial class Main : Control
 		LoadInstalledBepInExGamesAsync();
 	}
 
-	private bool _isUninstallMode = false;
-	
 	private void SetupInstallerCallbacks()
 	{
 		_installer.OnLog = (message) => 
 		{
-			if (_isUninstallMode)
-				CallDeferred(nameof(AppendUninstallLog), $"[color=white]{message}[/color]");
-			else
-				CallDeferred(nameof(AppendLog), $"[color=white]{message}[/color]");
+			CallDeferred(nameof(AppendLog), $"[color=white]{message}[/color]");
 		};
 		
 		_installer.OnVerboseLog = (message, type) => 
@@ -69,18 +63,12 @@ public partial class Main : Control
 				InstallerBackend.MessageType.Error => "red",
 				_ => "white"
 			};
-			if (_isUninstallMode)
-				CallDeferred(nameof(AppendUninstallLog), $"[color={color}][{type}] {message}[/color]");
-			else
-				CallDeferred(nameof(AppendLog), $"[color={color}][{type}] {message}[/color]");
+			CallDeferred(nameof(AppendLog), $"[color={color}][{type}] {message}[/color]");
 		};
 		
 		_installer.OnError = (message) => 
 		{
-			if (_isUninstallMode)
-				CallDeferred(nameof(AppendUninstallLog), $"[color=red]ERROR: {message}[/color]");
-			else
-				CallDeferred(nameof(AppendLog), $"[color=red]ERROR: {message}[/color]");
+			CallDeferred(nameof(AppendLog), $"[color=red]ERROR: {message}[/color]");
 		};
 		
 		_installer.OnProgress = (progress) => 
@@ -107,16 +95,8 @@ public partial class Main : Control
 		_uninstallPickManualButton = GetNode<Button>("PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer/pick");
 		_uninstallFileDialog = GetNode<FileDialog>("PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer/FileDialog");
 		_uninstallVerboseCheckbox = GetNode<CheckBox>("PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer/CheckBox");
-		_uninstallButton = GetNode<Button>("PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer/Install");
-		_uninstallLogOutput = GetNode<RichTextLabel>("PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer/ScrollContainer/LogOutput");
-		
-		// Info tab buttons
-		_githubButton = GetNode<Button>("PanelContainer/MarginContainer/TabContainer/Info/MarginContainer/VBoxContainer/HBoxContainer/GitHub");
-		_nexusModsButton = GetNode<Button>("PanelContainer/MarginContainer/TabContainer/Info/MarginContainer/VBoxContainer/HBoxContainer/Nexus Mods");
-		_aedenthornButton = GetNode<Button>("PanelContainer/MarginContainer/TabContainer/Info/MarginContainer/VBoxContainer/HBoxContainer/aedenthorn");
-		_bepinexButton = GetNode<Button>("PanelContainer/MarginContainer/TabContainer/Info/MarginContainer/VBoxContainer/HBoxContainer/BepInEx");
-		
-		// Setup file dialogs
+		_uninstallButton = GetNode<Button>("PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer/Uninstall");
+		_uninstallLogOutput s
 		_fileDialog.FileMode = FileDialog.FileModeEnum.OpenDir;
 		_fileDialog.Access = FileDialog.AccessEnum.Filesystem;
 		_fileDialog.Title = "Select Game Directory";
@@ -135,26 +115,33 @@ public partial class Main : Control
 		
 		_uninstallGameOptionButton.Clear();
 		_uninstallGameOptionButton.AddItem("Loading games...");
-		_uninstallGameOptionButton.Disabled = true;
+		_uninstallGileDialog.Title = "Select Game Directory";
+		
+		// Hide advanced commands by default
+		_advancedCommandsLineEdit.Visible = false;
+		
+		// Clear option button immediately to prevent duplicates
+		_gameOptionButton.Clear();
+		_gameOptionButton.AddItem("Loading games...");
+		_gameOptionButton.Disabled = true;
 	}
 
 	private void ConnectSignals()
 	{
-		// Install tab signals
-		_gameOptionButton.ItemSelected += OnGameSelected;
+		_gaUninstall tab signals
+		_uninstallGameOptionButton.ItemSelected += OnUninstallGameSelected;
+		_uninstallPickManualButton.Pressed += OnUninstallPickManualPressed;
+		_uninstallFileDialog.DirSelected += OnUninstallDirectorySelected;
+		_uninstallButton.Pressed += OnUninstallPressed;
+		_uninstallVerboseCheckbox.Toggled += OnUninstallVerboseToggled;
+		
+		// meOptionButton.ItemSelected += OnGameSelected;
 		_pickManualButton.Pressed += OnPickManualPressed;
 		_fileDialog.DirSelected += OnDirectorySelected;
 		_installButton.Pressed += OnInstallPressed;
 		_verboseCheckbox.Toggled += OnVerboseToggled;
 		_consoleCheckbox.Toggled += OnConsoleToggled;
 		_advancedCheckbox.Toggled += OnAdvancedToggled;
-		
-		// Uninstall tab signals
-		_uninstallGameOptionButton.ItemSelected += OnUninstallGameSelected;
-		_uninstallPickManualButton.Pressed += OnUninstallPickManualPressed;
-		_uninstallFileDialog.DirSelected += OnUninstallDirectorySelected;
-		_uninstallButton.Pressed += OnUninstallPressed;
-		_uninstallVerboseCheckbox.Toggled += OnUninstallVerboseToggled;
 		
 		// Info buttons
 		_githubButton.Pressed += () => OS.ShellOpen("https://github.com/Toemmsen96/BepInExInstaller");
@@ -187,28 +174,21 @@ public partial class Main : Control
 				_gameOptionButton.AddItem(game.Name);
 			}
 			_gameOptionButton.Selected = 0;
-			_gameOptionButton.Disabled = false;
-			AppendLog($"[color=green]Found {_games.Count} Unity games![/color]");
-		}
-		
-		_installButton.Disabled = false;
-	}
-
-	private async void LoadInstalledBepInExGamesAsync()
+			_gameOasync void LoadInstalledBepInExGamesAsync()
 	{
 		AppendUninstallLog("[color=cyan]Searching for games with BepInEx installed...[/color]");
 		_uninstallButton.Disabled = true;
 		
 		// Get all games and filter for those with BepInEx
 		var allGames = await _installer.GetInstalledGamesAsync();
-		_gamesWithBepInEx = allGames.Where(game => 
+		var gamesWithBepInEx = allGames.Where(game => 
 			System.IO.Directory.Exists(System.IO.Path.Combine(game.InstallPath, "BepInEx"))
 		).ToList();
 		
 		// Clear existing items
 		_uninstallGameOptionButton.Clear();
 		
-		if (_gamesWithBepInEx.Count == 0)
+		if (gamesWithBepInEx.Count == 0)
 		{
 			_uninstallGameOptionButton.AddItem("No games with BepInEx found");
 			_uninstallGameOptionButton.Disabled = true;
@@ -217,16 +197,23 @@ public partial class Main : Control
 		else
 		{
 			_uninstallGameOptionButton.AddItem("-- Select a game --");
-			foreach (var game in _gamesWithBepInEx)
+			foreach (var game in gamesWithBepInEx)
 			{
 				_uninstallGameOptionButton.AddItem(game.Name);
 			}
 			_uninstallGameOptionButton.Selected = 0;
 			_uninstallGameOptionButton.Disabled = false;
-			AppendUninstallLog($"[color=green]Found {_gamesWithBepInEx.Count} games with BepInEx installed![/color]");
+			AppendUninstallLog($"[color=green]Found {gamesWithBepInEx.Count} games with BepInEx installed![/color]");
 		}
 		
 		_uninstallButton.Disabled = false;
+	}
+
+	private ptionButton.Disabled = false;
+			AppendLog($"[color=green]Found {_games.Count} Unity games![/color]");
+		}
+		
+		_installButton.Disabled = false;
 	}
 
 	private void OnGameSelected(long index)
@@ -263,10 +250,92 @@ public partial class Main : Control
 			return;
 		}
 		
-		_isUninstallMode = false;
 		_installButton.Disabled = true;
 		_installButton.Text = "Installing...";
+		OnUninstallGameSelected(long index)
+	{
+		if (index <= 0)
+		{
+			_selectedUninstallGamePath = null;
+			return;
+		}
 		
+		// We need to get the game from the filtered list
+		// Since we're reusing _games temporarily in LoadInstalledBepInExGamesAsync
+		// we need a better approach - let's use the option button text
+		string gameName = _uninstallGameOptionButton.GetItemText((int)index);
+		rivate void AppendUninstallLog(string message)
+	{
+		if (_uninstallLogOutput != null)
+		{
+			_uninstallLogOutput.AppendText(message + "\n");
+		}
+		else
+		{
+			GD.Print(message);
+		}
+	}
+
+	p
+		// Find the game in our original install games list
+		var game = _games?.FirstOrDefault(g => g.Name == gameName);
+		if (game != null)
+		{
+			_selectedUninstallGamePath = game.InstallPath;
+			AppendUninstallLog($"[color=cyan]Selected: {game.Name}[/color]");
+			AppendUninstallLog($"[color=gray]Path: {_selectedUninstallGamePath}[/color]");
+		}
+	}
+
+	private void OnUninstallPickManualPressed()
+	{
+		_uninstallFileDialog.PopupCentered(new Vector2I(800, 600));
+	}
+
+	private void OnUninstallDirectorySelected(string dir)
+	{
+		_selectedUninstallGamePath = dir;
+		AppendUninstallLog($"[color=cyan]Manually selected directory:[/color]");
+		AppendUninstallLog($"[color=gray]{dir}[/color]");
+	}
+
+	private async void OnUninstallPressed()
+	{
+		if (string.IsNullOrEmpty(_selectedUninstallGamePath))
+		{
+			AppendUninstallLog("[color=red]Please select a game first![/color]");
+			return;
+		}
+		
+		_uninstallButton.Disabled = true;
+		_uninstallButton.Text = "Uninstalling...";
+		
+		AppendUninstallLog("[color=cyan]========== Starting Uninstallation ==========[/color]");
+		
+		bool success = await _installer.UninstallBepInExAsync(_selectedUninstallGamePath);
+		
+		if (success)
+		{
+			AppendUninstallLog("[color=lime]========== Uninstallation Complete! ==========[/color]");
+			// Refresh the list of games with BepInEx
+			LoadInstalledBepInExGamesAsync();
+		}
+		else
+		{
+			AppendUninstallLog("[color=red]========== Uninstallation Failed ==========[/color]");
+		}
+		
+		_uninstallButton.Disabled = false;
+		_uninstallButton.Text = "Uninstall";
+	}
+
+	private void OnUninstallVerboseToggled(bool pressed)
+	{
+		_installer.Verbose = pressed;
+		AppendUninstallLog($"[color=yellow]Verbose output: {(pressed ? \"ON\" : \"OFF\")}[/color]");
+	}
+
+	private void 
 		AppendLog("[color=cyan]========== Starting Installation ==========[/color]");
 		
 		bool success = await _installer.InstallBepInExAsync(_selectedGamePath);
@@ -301,86 +370,11 @@ public partial class Main : Control
 		_advancedCommandsLineEdit.Visible = pressed;
 	}
 
-	private void OnUninstallGameSelected(long index)
-	{
-		if (index <= 0 || _gamesWithBepInEx == null || index > _gamesWithBepInEx.Count)
-		{
-			_selectedUninstallGamePath = null;
-			return;
-		}
-		
-		var game = _gamesWithBepInEx[(int)index - 1];
-		_selectedUninstallGamePath = game.InstallPath;
-		AppendUninstallLog($"[color=cyan]Selected: {game.Name}[/color]");
-		AppendUninstallLog($"[color=gray]Path: {_selectedUninstallGamePath}[/color]");
-	}
-
-	private void OnUninstallPickManualPressed()
-	{
-		_uninstallFileDialog.PopupCentered(new Vector2I(800, 600));
-	}
-
-	private void OnUninstallDirectorySelected(string dir)
-	{
-		_selectedUninstallGamePath = dir;
-		AppendUninstallLog($"[color=cyan]Manually selected directory:[/color]");
-		AppendUninstallLog($"[color=gray]{dir}[/color]");
-	}
-
-	private async void OnUninstallPressed()
-	{
-		if (string.IsNullOrEmpty(_selectedUninstallGamePath))
-		{
-			AppendUninstallLog("[color=red]Please select a game first![/color]");
-			return;
-		}
-		
-		_isUninstallMode = true;
-		_uninstallButton.Disabled = true;
-		_uninstallButton.Text = "Uninstalling...";
-		
-		AppendUninstallLog("[color=cyan]========== Starting Uninstallation ==========[/color]");
-		
-		bool success = await _installer.UninstallBepInExAsync(_selectedUninstallGamePath);
-		
-		if (success)
-		{
-			AppendUninstallLog("[color=lime]========== Uninstallation Complete! ==========[/color]");
-			// Refresh the list of games with BepInEx
-			LoadInstalledBepInExGamesAsync();
-		}
-		else
-		{
-			AppendUninstallLog("[color=red]========== Uninstallation Failed ==========[/color]");
-		}
-		
-		_uninstallButton.Disabled = false;
-		_uninstallButton.Text = "Uninstall";
-	}
-
-	private void OnUninstallVerboseToggled(bool pressed)
-	{
-		_installer.Verbose = pressed;
-		AppendUninstallLog($"[color=yellow]Verbose output: {(pressed ? "ON" : "OFF")}[/color]");
-	}
-
 	private void AppendLog(string message)
 	{
 		if (_logOutput != null)
 		{
 			_logOutput.AppendText(message + "\n");
-		}
-		else
-		{
-			GD.Print(message);
-		}
-	}
-
-	private void AppendUninstallLog(string message)
-	{
-		if (_uninstallLogOutput != null)
-		{
-			_uninstallLogOutput.AppendText(message + "\n");
 		}
 		else
 		{

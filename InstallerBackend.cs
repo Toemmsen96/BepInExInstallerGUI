@@ -124,7 +124,10 @@ namespace BepInExInstaller
                         }
                     }
                 }
-
+                
+                // Remove duplicates based on AppId
+                games = games.GroupBy(g => g.AppId).Select(g => g.First()).ToList();
+                
                 Log($"Found {games.Count} Unity games");
             }
             catch (Exception ex)
@@ -759,7 +762,12 @@ namespace BepInExInstaller
                     foreach (Match match in pathMatches)
                     {
                         string path = match.Groups[1].Value.Replace("\\\\", "/");
-                        if (Directory.Exists(path) && !libraryPaths.Contains(path))
+                        // Normalize path for comparison (handle symlinks and case sensitivity)
+                        string normalizedPath = Path.GetFullPath(path);
+                        string normalizedSteamPath = Path.GetFullPath(steamPath);
+                        
+                        if (Directory.Exists(path) && 
+                            !libraryPaths.Any(p => Path.GetFullPath(p).Equals(normalizedPath, StringComparison.OrdinalIgnoreCase)))
                         {
                             libraryPaths.Add(path);
                         }
