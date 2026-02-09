@@ -1,0 +1,24 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="BepInExInstaller"
+config/description="GUI Tool to install and uninstall BepInEx into games.
+Detects games from Steam automatically"
+config/version="0.0.1"
+run/main_scene="uid://cdnlql3cx4t57"
+config/features=PackedStringArray("4.5", "C#", "Forward Plus")
+boot_splash/image="uid://dqlsb2q87djm1"
+config/icon="uid://8o700vb55xb7"
+
+[dotnet]
+
+project/assembly_name="BepInExInstaller"
