@@ -576,8 +576,8 @@ public static class ProtonConfig
                 var stdoutTask = process.StandardOutput.ReadToEndAsync();
                 var stderrTask = process.StandardError.ReadToEndAsync();
                 
-                // Wait with timeout (5 seconds should be plenty for regedit)
-                bool exited = process.WaitForExit(5000);
+                // Wait with timeout (Wine can take longer on some systems, especially during prefix initialization)
+                bool exited = process.WaitForExit(15000);
                 
                 // Get output
                 string stdout = stdoutTask.IsCompleted ? stdoutTask.Result : "";
