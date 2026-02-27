@@ -472,7 +472,7 @@ namespace BepInExInstaller
                 }
                 else
                 {
-                    LogError("Proton configuration failed. You may need to configure it manually.");
+                    LogError("Proton configuration failed. You may need to configure it manually using Protontricks.");
                 }
             }
             else

@@ -6,9 +6,7 @@ using static BepInExInstaller.Util;
 namespace BepInExInstaller
 {
     public static class PluginInstaller
-    {
-        internal static ConsoleKeyInfo key;
-        
+    {        
         public static void InstallTo(string gamePath, string archivePath)
         {
             if (string.IsNullOrEmpty(archivePath))
