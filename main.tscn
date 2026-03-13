@@ -90,6 +90,11 @@ ok_button_text = "Select"
 file_mode = 0
 filters = PackedStringArray("*.zip ; Zip Files")
 
+[node name="PickPlugins" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "Select Plugins .zip file to install"
+text = "Select Plugins To install"
+
 [node name="Install" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
 layout_mode = 2
 tooltip_text = "Install BepInEx with the selected settings"

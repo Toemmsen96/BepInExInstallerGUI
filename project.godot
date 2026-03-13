@@ -19,6 +19,12 @@ config/features=PackedStringArray("4.5", "C#", "Forward Plus")
 boot_splash/image="uid://dqlsb2q87djm1"
 config/icon="uid://8o700vb55xb7"
 
+[display]
+
+window/size/transparent=true
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
 [dotnet]
 
 project/assembly_name="BepInExInstaller"
@@ -26,3 +32,4 @@ project/assembly_name="BepInExInstaller"
 [rendering]
 
 environment/defaults/default_clear_color=Color(0.47058824, 0.47058824, 0.47058824, 0)
+viewport/transparent_background=true

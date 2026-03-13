@@ -18,6 +18,7 @@ public partial class Main : Control
 	private CheckBox _verboseCheckbox;
 	private CheckBox _consoleCheckbox;
 	private CheckBox _pluginsCheckbox;
+	private Button _pickPluginsButton;
 	private FileDialog _pluginsFileDialog;
 	private Button _installButton;
 	private CheckBox _advancedCheckbox;
@@ -107,6 +108,7 @@ public partial class Main : Control
 		_consoleCheckbox = GetNode<CheckBox>("PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer/ConsoleCheckBox");
 		_pluginsCheckbox = GetNode<CheckBox>("PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer/PluginsCheckBox2");
 		_pluginsFileDialog = GetNode<FileDialog>("PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer/PluginsCheckBox2/FileDialog");
+		_pickPluginsButton = GetNode<Button>("PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer/PickPlugins");
 		_installButton = GetNode<Button>("PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer/Install");
 		_advancedCheckbox = GetNode<CheckBox>("PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer/adv");
 		_advancedCommandsLineEdit = GetNode<LineEdit>("PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer/cmds");
@@ -135,7 +137,7 @@ public partial class Main : Control
 		_fileDialog.Title = "Select Game Directory";
 		
 		_pluginsFileDialog.Access = FileDialog.AccessEnum.Filesystem;
-		
+		_pluginsFileDialog.Title = "Select Plugins.zip Files to install";
 		_uninstallFileDialog.FileMode = FileDialog.FileModeEnum.OpenDir;
 		_uninstallFileDialog.Access = FileDialog.AccessEnum.Filesystem;
 		_uninstallFileDialog.Title = "Select Game Directory to Uninstall From";
@@ -165,6 +167,8 @@ public partial class Main : Control
 		_verboseCheckbox.Toggled += OnVerboseToggled;
 		_consoleCheckbox.Toggled += OnConsoleToggled;
 		_pluginsCheckbox.Toggled += OnPluginsToggled;
+		_pickPluginsButton.Pressed += () => _pluginsFileDialog.PopupCentered(new Vector2I(600, 400));
+		_pickPluginsButton.Visible = false;
 		_pluginsFileDialog.FileSelected += OnPluginFileSelected;
 		_advancedCheckbox.Toggled += OnAdvancedToggled;
 		
@@ -354,10 +358,11 @@ public partial class Main : Control
 	{
 		if (pressed)
 		{
-			_pluginsFileDialog.PopupCentered(new Vector2I(600, 400));
+			_pickPluginsButton.Visible = true;
 		}
 		else
 		{
+			_pickPluginsButton.Visible = false;
 			_selectedPluginZipPath = null;
 			AppendLog("[color=yellow]Plugin installation disabled[/color]");
 		}
