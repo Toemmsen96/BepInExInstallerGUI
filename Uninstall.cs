@@ -10,6 +10,7 @@ public partial class Uninstall : PanelContainer
 	private List<InstallerBackend.GameInfo> _gamesWithBepInEx;
 
 	private OptionButton _uninstallGameOptionButton;
+	private Button _uninstallRecheckGamesButton;
 	private Button _uninstallPickManualButton;
 	private FileDialog _uninstallFileDialog;
 	private CheckBox _uninstallKeepPluginsCheckbox;
@@ -64,6 +65,7 @@ public partial class Uninstall : PanelContainer
 	private void GetUIReferences()
 	{
 		_uninstallGameOptionButton = GetNode<OptionButton>("MarginContainer2/VBoxContainer/OptionButton");
+		_uninstallRecheckGamesButton = GetNode<Button>("MarginContainer2/VBoxContainer/RecheckGames");
 		_uninstallPickManualButton = GetNode<Button>("MarginContainer2/VBoxContainer/pick");
 		_uninstallFileDialog = GetNode<FileDialog>("MarginContainer2/VBoxContainer/FileDialog");
 		_uninstallKeepPluginsCheckbox = GetNode<CheckBox>("MarginContainer2/VBoxContainer/KeepPluginsCheck");
@@ -86,6 +88,7 @@ public partial class Uninstall : PanelContainer
 	private void ConnectSignals()
 	{
 		_uninstallGameOptionButton.ItemSelected += OnUninstallGameSelected;
+		_uninstallRecheckGamesButton.Pressed += OnUninstallRecheckGamesPressed;
 		_uninstallPickManualButton.Pressed += OnUninstallPickManualPressed;
 		_uninstallFileDialog.DirSelected += OnUninstallDirectorySelected;
 		_uninstallButton.Pressed += OnUninstallPressed;
@@ -100,6 +103,7 @@ public partial class Uninstall : PanelContainer
 	{
 		AppendUninstallLog("[color=cyan]Searching for games with BepInEx installed...[/color]");
 		_uninstallButton.Disabled = true;
+		_uninstallRecheckGamesButton.Disabled = true;
 
 		var allGames = await _installer.GetInstalledGamesAsync();
 		_gamesWithBepInEx = allGames.Where(game =>
@@ -127,6 +131,15 @@ public partial class Uninstall : PanelContainer
 		}
 
 		_uninstallButton.Disabled = false;
+		_uninstallRecheckGamesButton.Disabled = false;
+	}
+
+	private void OnUninstallRecheckGamesPressed()
+	{
+		AppendUninstallLog("[color=cyan]Manual rescan requested...[/color]");
+		_selectedUninstallGamePath = null;
+		_uninstallPickManualButton.Visible = true;
+		LoadInstalledBepInExGamesAsync();
 	}
 
 	private void OnUninstallGameSelected(long index)

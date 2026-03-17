@@ -12,6 +12,7 @@ public partial class Install : PanelContainer
 	private List<InstallerBackend.GameInfo> _games;
 
 	private OptionButton _gameOptionButton;
+	private Button _recheckGamesButton;
 	private Button _pickManualButton;
 	private FileDialog _fileDialog;
 	private CheckBox _logCheckbox;
@@ -80,6 +81,7 @@ public partial class Install : PanelContainer
 	private void GetUIReferences()
 	{
 		_gameOptionButton = GetNode<OptionButton>("MarginContainer2/VBoxContainer/OptionButton");
+		_recheckGamesButton = GetNode<Button>("MarginContainer2/VBoxContainer/RecheckGames");
 		_pickManualButton = GetNode<Button>("MarginContainer2/VBoxContainer/pick");
 		_fileDialog = GetNode<FileDialog>("MarginContainer2/VBoxContainer/FileDialog");
 		_logCheckbox = GetNode<CheckBox>("MarginContainer2/VBoxContainer/LogCheck");
@@ -117,6 +119,7 @@ public partial class Install : PanelContainer
 	private void ConnectSignals()
 	{
 		_gameOptionButton.ItemSelected += OnGameSelected;
+		_recheckGamesButton.Pressed += OnRecheckGamesPressed;
 		_pickManualButton.Pressed += OnPickManualPressed;
 		_fileDialog.DirSelected += OnDirectorySelected;
 		_installButton.Pressed += OnInstallPressed;
@@ -132,6 +135,7 @@ public partial class Install : PanelContainer
 	{
 		AppendLog("[color=cyan]Searching for installed Unity games...[/color]");
 		_installButton.Disabled = true;
+		_recheckGamesButton.Disabled = true;
 
 		_games = await _installer.GetInstalledGamesAsync();
 
@@ -156,6 +160,15 @@ public partial class Install : PanelContainer
 		}
 
 		_installButton.Disabled = false;
+		_recheckGamesButton.Disabled = false;
+	}
+
+	private void OnRecheckGamesPressed()
+	{
+		AppendLog("[color=cyan]Manual rescan requested...[/color]");
+		_selectedGamePath = null;
+		_pickManualButton.Visible = true;
+		LoadGamesAsync();
 	}
 
 	private void OnGameSelected(long index)

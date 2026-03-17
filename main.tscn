@@ -53,10 +53,9 @@ theme_override_constants/margin_bottom = 5
 
 [node name="TabContainer" type="TabContainer" parent="PanelContainer/MarginContainer"]
 layout_mode = 2
-current_tab = 3
+current_tab = 0
 
 [node name="Install" type="PanelContainer" parent="PanelContainer/MarginContainer/TabContainer"]
-visible = false
 self_modulate = Color(1, 1, 1, 0)
 layout_mode = 2
 script = ExtResource("4_5myhr")
@@ -79,6 +78,11 @@ text = "Select game to install to"
 [node name="OptionButton" type="OptionButton" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
 layout_mode = 2
 tooltip_text = "Select one from the Steam detected games here to install BepInEx into"
+
+[node name="RecheckGames" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "Install BepInEx with the selected settings"
+text = "Recheck Installed Games"
 
 [node name="pick" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
 layout_mode = 2
@@ -177,6 +181,11 @@ layout_mode = 2
 
 [node name="OptionButton" type="OptionButton" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
 layout_mode = 2
+
+[node name="RecheckGames" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "Install BepInEx with the selected settings"
+text = "Recheck Installed Games"
 
 [node name="pick" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
 layout_mode = 2
@@ -317,6 +326,7 @@ bbcode_enabled = true
 scroll_following = true
 
 [node name="Info" type="PanelContainer" parent="PanelContainer/MarginContainer/TabContainer"]
+visible = false
 self_modulate = Color(1, 1, 1, 0)
 layout_mode = 2
 metadata/_tab_index = 3
