@@ -24,6 +24,7 @@ config/icon="uid://8o700vb55xb7"
 window/size/transparent=true
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+window/per_pixel_transparency/allowed=true
 
 [dotnet]
 
