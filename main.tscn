@@ -33,7 +33,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.46254444, 0.23129874, 0.0906202, 0.8509804)
+color = Color(0.1310424, 0, 0.15377831, 0.8509804)
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
 material = SubResource("ShaderMaterial_0xm2m")
