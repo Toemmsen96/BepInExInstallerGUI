@@ -5,6 +5,7 @@ public partial class Main : Control
 {
 	private Install _installTab;
 	private Uninstall _uninstallTab;
+	private Settings _settingsTab;
 
 	// Info tab buttons
 	private Button _githubButton;
@@ -23,6 +24,7 @@ public partial class Main : Control
 	{
 		_installTab = GetNode<Install>("PanelContainer/MarginContainer/TabContainer/Install");
 		_uninstallTab = GetNode<Uninstall>("PanelContainer/MarginContainer/TabContainer/Uninstall");
+		_settingsTab = GetNode<Settings>("PanelContainer/MarginContainer/TabContainer/Settings");
 	}
 
 	private void GetUIReferences()
@@ -37,6 +39,8 @@ public partial class Main : Control
 	private void ConnectSignals()
 	{
 		_installTab.InstallCompleted += OnInstallCompleted;
+		_settingsTab.VerboseSettingChanged += OnVerboseSettingChanged;
+		OnVerboseSettingChanged(_settingsTab.GetVerboseOutputSetting());
 
 		// Info buttons
 		_githubButton.Pressed += () => OS.ShellOpen("https://github.com/Toemmsen96/BepInExInstaller");
@@ -48,6 +52,12 @@ public partial class Main : Control
 	private void OnInstallCompleted()
 	{
 		_uninstallTab.RefreshGames();
+	}
+
+	private void OnVerboseSettingChanged(bool enabled)
+	{
+		_installTab.SetVerboseFromSettings(enabled);
+		_uninstallTab.SetVerboseFromSettings(enabled);
 	}
 
 	public override void _Process(double delta)

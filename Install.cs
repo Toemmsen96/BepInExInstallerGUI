@@ -15,7 +15,6 @@ public partial class Install : PanelContainer
 	private Button _pickManualButton;
 	private FileDialog _fileDialog;
 	private CheckBox _logCheckbox;
-	private CheckBox _verboseCheckbox;
 	private CheckBox _consoleCheckbox;
 	private CheckBox _pluginsCheckbox;
 	private Button _pickPluginsButton;
@@ -33,6 +32,7 @@ public partial class Install : PanelContainer
 	private const string SettingsPath = "user://settings.cfg";
 	private const string UiSection = "ui";
 	private const string CompletionPopupsKey = "show_completion_popups";
+	private const string VerboseOutputKey = "verbose_output_enabled";
 
 	private string _selectedGamePath = null;
 	private string _selectedPluginZipPath = null;
@@ -83,7 +83,6 @@ public partial class Install : PanelContainer
 		_pickManualButton = GetNode<Button>("MarginContainer2/VBoxContainer/pick");
 		_fileDialog = GetNode<FileDialog>("MarginContainer2/VBoxContainer/FileDialog");
 		_logCheckbox = GetNode<CheckBox>("MarginContainer2/VBoxContainer/LogCheck");
-		_verboseCheckbox = GetNode<CheckBox>("MarginContainer2/VBoxContainer/VerboseCheckBox");
 		_consoleCheckbox = GetNode<CheckBox>("MarginContainer2/VBoxContainer/ConsoleCheckBox");
 		_pluginsCheckbox = GetNode<CheckBox>("MarginContainer2/VBoxContainer/PluginsCheckBox2");
 		_pluginsFileDialog = GetNode<FileDialog>("MarginContainer2/VBoxContainer/PluginsCheckBox2/FileDialog");
@@ -110,6 +109,9 @@ public partial class Install : PanelContainer
 		_gameOptionButton.Clear();
 		_gameOptionButton.AddItem("Loading games...");
 		_gameOptionButton.Disabled = true;
+
+		SetVerboseFromSettings(ReadVerboseSetting());
+		StyleResultDialog();
 	}
 
 	private void ConnectSignals()
@@ -119,7 +121,6 @@ public partial class Install : PanelContainer
 		_fileDialog.DirSelected += OnDirectorySelected;
 		_installButton.Pressed += OnInstallPressed;
 		_logCheckbox.Toggled += OnLogCheckToggled;
-		_verboseCheckbox.Toggled += OnVerboseToggled;
 		_consoleCheckbox.Toggled += OnConsoleToggled;
 		_pluginsCheckbox.Toggled += OnPluginsToggled;
 		_pickPluginsButton.Pressed += () => _pluginsFileDialog.PopupCentered(new Vector2I(600, 400));
@@ -279,6 +280,21 @@ public partial class Install : PanelContainer
 		return header + "\n\nProblems:\n" + string.Join("\n", lines);
 	}
 
+	private void StyleResultDialog()
+	{
+		// Apply theme colors to match app styling
+		var darkBg = new Color(0.15f, 0.15f, 0.15f, 0.95f);
+		var lightText = new Color(0.9f, 0.9f, 0.9f, 1.0f);
+		var accentGreen = new Color(0.55153227f, 0.9798047f, 0.7516775f, 1.0f);
+
+		_resultDialog.AddThemeColorOverride("font_color", lightText);
+		_resultDialog.AddThemeColorOverride("title_color", accentGreen);
+		_resultDialog.AddThemeColorOverride("panel_color", darkBg);
+		_resultDialog.AddThemeColorOverride("button_font_color", lightText);
+		_resultDialog.AddThemeColorOverride("button_focus_color", new Color(0.3f, 0.3f, 0.3f, 1.0f));
+		_resultDialog.AddThemeColorOverride("button_hover_color", new Color(0.25f, 0.25f, 0.25f, 1.0f));
+	}
+
 	private bool ShouldShowCompletionPopups()
 	{
 		var config = new ConfigFile();
@@ -292,14 +308,23 @@ public partial class Install : PanelContainer
 
 	private void OnLogCheckToggled(bool pressed)
 	{
-		_verboseCheckbox.Visible = pressed;
 		_scrollContainer.Visible = pressed;
 	}
 
-	private void OnVerboseToggled(bool pressed)
+	public void SetVerboseFromSettings(bool enabled)
 	{
-		_installer.Verbose = pressed;
-		AppendLog($"[color=yellow]Verbose output: {(pressed ? "ON" : "OFF")}[/color]");
+		_installer.Verbose = enabled;
+	}
+
+	private bool ReadVerboseSetting()
+	{
+		var config = new ConfigFile();
+		if (config.Load(SettingsPath) != Error.Ok)
+		{
+			return true;
+		}
+
+		return (bool)config.GetValue(UiSection, VerboseOutputKey, true);
 	}
 
 	private void OnConsoleToggled(bool pressed)

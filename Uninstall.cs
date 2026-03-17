@@ -13,7 +13,6 @@ public partial class Uninstall : PanelContainer
 	private Button _uninstallPickManualButton;
 	private FileDialog _uninstallFileDialog;
 	private CheckBox _uninstallKeepPluginsCheckbox;
-	private CheckBox _uninstallVerboseCheckbox;
 	private Button _uninstallButton;
 	private RichTextLabel _uninstallLogOutput;
 	private AcceptDialog _resultDialog;
@@ -23,6 +22,7 @@ public partial class Uninstall : PanelContainer
 	private const string SettingsPath = "user://settings.cfg";
 	private const string UiSection = "ui";
 	private const string CompletionPopupsKey = "show_completion_popups";
+	private const string VerboseOutputKey = "verbose_output_enabled";
 
 	private string _selectedUninstallGamePath = null;
 
@@ -67,7 +67,6 @@ public partial class Uninstall : PanelContainer
 		_uninstallPickManualButton = GetNode<Button>("MarginContainer2/VBoxContainer/pick");
 		_uninstallFileDialog = GetNode<FileDialog>("MarginContainer2/VBoxContainer/FileDialog");
 		_uninstallKeepPluginsCheckbox = GetNode<CheckBox>("MarginContainer2/VBoxContainer/KeepPluginsCheck");
-		_uninstallVerboseCheckbox = GetNode<CheckBox>("MarginContainer2/VBoxContainer/VerboseCheckBox");
 		_uninstallButton = GetNode<Button>("MarginContainer2/VBoxContainer/Uninstall");
 		_uninstallLogOutput = GetNode<RichTextLabel>("MarginContainer2/VBoxContainer/ScrollContainer/LogOutput");
 		_resultDialog = GetNode<AcceptDialog>("MarginContainer2/VBoxContainer/ResultDialog");
@@ -79,6 +78,9 @@ public partial class Uninstall : PanelContainer
 		_uninstallGameOptionButton.Clear();
 		_uninstallGameOptionButton.AddItem("Loading games...");
 		_uninstallGameOptionButton.Disabled = true;
+
+		SetVerboseFromSettings(ReadVerboseSetting());
+		StyleResultDialog();
 	}
 
 	private void ConnectSignals()
@@ -87,7 +89,6 @@ public partial class Uninstall : PanelContainer
 		_uninstallPickManualButton.Pressed += OnUninstallPickManualPressed;
 		_uninstallFileDialog.DirSelected += OnUninstallDirectorySelected;
 		_uninstallButton.Pressed += OnUninstallPressed;
-		_uninstallVerboseCheckbox.Toggled += OnUninstallVerboseToggled;
 	}
 
 	public void RefreshGames()
@@ -228,6 +229,21 @@ public partial class Uninstall : PanelContainer
 		return header + "\n\nProblems:\n" + string.Join("\n", lines);
 	}
 
+	private void StyleResultDialog()
+	{
+		// Apply theme colors to match app styling
+		var darkBg = new Color(0.15f, 0.15f, 0.15f, 0.95f);
+		var lightText = new Color(0.9f, 0.9f, 0.9f, 1.0f);
+		var accentRed = new Color(0.979804f, 0.551532f, 0.539867f, 1.0f);
+
+		_resultDialog.AddThemeColorOverride("font_color", lightText);
+		_resultDialog.AddThemeColorOverride("title_color", accentRed);
+		_resultDialog.AddThemeColorOverride("panel_color", darkBg);
+		_resultDialog.AddThemeColorOverride("button_font_color", lightText);
+		_resultDialog.AddThemeColorOverride("button_focus_color", new Color(0.3f, 0.3f, 0.3f, 1.0f));
+		_resultDialog.AddThemeColorOverride("button_hover_color", new Color(0.25f, 0.25f, 0.25f, 1.0f));
+	}
+
 	private bool ShouldShowCompletionPopups()
 	{
 		var config = new ConfigFile();
@@ -239,10 +255,20 @@ public partial class Uninstall : PanelContainer
 		return (bool)config.GetValue(UiSection, CompletionPopupsKey, true);
 	}
 
-	private void OnUninstallVerboseToggled(bool pressed)
+	public void SetVerboseFromSettings(bool enabled)
 	{
-		_installer.Verbose = pressed;
-		AppendUninstallLog($"[color=yellow]Verbose output: {(pressed ? "ON" : "OFF")}[/color]");
+		_installer.Verbose = enabled;
+	}
+
+	private bool ReadVerboseSetting()
+	{
+		var config = new ConfigFile();
+		if (config.Load(SettingsPath) != Error.Ok)
+		{
+			return true;
+		}
+
+		return (bool)config.GetValue(UiSection, VerboseOutputKey, true);
 	}
 
 	private void AppendUninstallLog(string message)
