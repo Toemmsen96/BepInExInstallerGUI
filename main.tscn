@@ -1,9 +1,10 @@
-[gd_scene load_steps=8 format=3 uid="uid://cdnlql3cx4t57"]
+[gd_scene load_steps=9 format=3 uid="uid://cdnlql3cx4t57"]
 
 [ext_resource type="Script" uid="uid://bx00injxbsdqw" path="res://Main.cs" id="1_ig7tw"]
 [ext_resource type="Shader" uid="uid://c2yolgpl3fq76" path="res://lqglass.gdshader" id="2_0xm2m"]
 [ext_resource type="Script" uid="uid://bfeevit84lfbl" path="res://Settings.cs" id="3_h2yge"]
 [ext_resource type="Script" uid="uid://dqurkupfmkvq0" path="res://Install.cs" id="4_5myhr"]
+[ext_resource type="Script" uid="uid://ddj2bssqxeko2" path="res://ModdingTools.cs" id="5_272bh"]
 [ext_resource type="Script" uid="uid://cuqcqmflfrimp" path="res://Uninstall.cs" id="5_d1ahd"]
 [ext_resource type="Texture2D" uid="uid://dqlsb2q87djm1" path="res://installericon.png" id="6_7mycd"]
 
@@ -53,9 +54,10 @@ theme_override_constants/margin_bottom = 5
 
 [node name="TabContainer" type="TabContainer" parent="PanelContainer/MarginContainer"]
 layout_mode = 2
-current_tab = 0
+current_tab = 2
 
 [node name="Install" type="PanelContainer" parent="PanelContainer/MarginContainer/TabContainer"]
+visible = false
 self_modulate = Color(1, 1, 1, 0)
 layout_mode = 2
 script = ExtResource("4_5myhr")
@@ -81,7 +83,7 @@ tooltip_text = "Select one from the Steam detected games here to install BepInEx
 
 [node name="RecheckGames" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
 layout_mode = 2
-tooltip_text = "Install BepInEx with the selected settings"
+tooltip_text = "Recheck for installed games to list in the dropdown"
 text = "Recheck Installed Games"
 
 [node name="pick" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
@@ -184,7 +186,7 @@ layout_mode = 2
 
 [node name="RecheckGames" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
 layout_mode = 2
-tooltip_text = "Install BepInEx with the selected settings"
+tooltip_text = "Recheck for installed games to list in the dropdown"
 text = "Recheck Installed Games"
 
 [node name="pick" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
@@ -233,12 +235,117 @@ oversampling_override = 1.0
 title = "Uninstall Result"
 size = Vector2i(560, 260)
 
+[node name="Modding Tools" type="PanelContainer" parent="PanelContainer/MarginContainer/TabContainer"]
+layout_mode = 2
+script = ExtResource("5_272bh")
+metadata/_tab_index = 2
+
+[node name="MarginContainer2" type="MarginContainer" parent="PanelContainer/MarginContainer/TabContainer/Modding Tools"]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/TabContainer/Modding Tools/MarginContainer2"]
+layout_mode = 2
+
+[node name="CreateMod" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Modding Tools/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Mod Creation"
+
+[node name="Select game" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Modding Tools/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+text = "Select game to create a BepInEx mod for:"
+
+[node name="OptionButton" type="OptionButton" parent="PanelContainer/MarginContainer/TabContainer/Modding Tools/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "Select one from the Steam detected games here to install BepInEx into"
+
+[node name="RecheckGames" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Modding Tools/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "Recheck for installed games to list in the dropdown"
+text = "Recheck Installed Games"
+
+[node name="pick" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Modding Tools/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "If your game is not detected automatically, select it using the file-dialog"
+text = "Pick Gamefiles manually"
+
+[node name="FileDialog" type="FileDialog" parent="PanelContainer/MarginContainer/TabContainer/Modding Tools/MarginContainer2/VBoxContainer"]
+oversampling_override = 1.0
+
+[node name="pickloc" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Modding Tools/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "Default is your Documents/BepInExMods"
+text = "Pick Location to create Template at"
+
+[node name="TemplateDialog" type="FileDialog" parent="PanelContainer/MarginContainer/TabContainer/Modding Tools/MarginContainer2/VBoxContainer"]
+oversampling_override = 1.0
+
+[node name="CTDynCheck" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Modding Tools/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "Toggle if you want to use CTDynamicModMenu in your mod"
+theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
+text = "Use CTDynamicModMenu"
+
+[node name="CopyDeps" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Modding Tools/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "Copy Basic Dependencies to the Template "
+theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
+text = "Copy Basic Dependencies"
+
+[node name="NameInput" type="LineEdit" parent="PanelContainer/MarginContainer/TabContainer/Modding Tools/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "Name your project..."
+
+[node name="CreateTemplate" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Modding Tools/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "Install BepInEx with the selected settings"
+theme_override_colors/font_color = Color(0.55153227, 0.9798047, 0.7516775, 1)
+text = "Create Template"
+
+[node name="ErrorDialog" type="AcceptDialog" parent="PanelContainer/MarginContainer/TabContainer/Modding Tools/MarginContainer2/VBoxContainer"]
+oversampling_override = 1.0
+title = "Install Result"
+size = Vector2i(560, 260)
+dialog_text = "Please start the game first with BepInEx installed"
+
+[node name="LogCheck" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Modding Tools/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "Toggle if the installer should show logs"
+theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
+button_pressed = true
+text = "Log output"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/MarginContainer/TabContainer/Modding Tools/MarginContainer2/VBoxContainer"]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+size_flags_vertical = 3
+tooltip_text = "Installer Logs"
+
+[node name="LogOutput" type="RichTextLabel" parent="PanelContainer/MarginContainer/TabContainer/Modding Tools/MarginContainer2/VBoxContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+bbcode_enabled = true
+scroll_following = true
+
+[node name="ProgressBar" type="ProgressBar" parent="PanelContainer/MarginContainer/TabContainer/Modding Tools/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+
+[node name="ResultDialog" type="AcceptDialog" parent="PanelContainer/MarginContainer/TabContainer/Modding Tools/MarginContainer2/VBoxContainer"]
+oversampling_override = 1.0
+title = "Install Result"
+size = Vector2i(560, 260)
+
 [node name="Settings" type="PanelContainer" parent="PanelContainer/MarginContainer/TabContainer"]
 visible = false
 self_modulate = Color(1, 1, 1, 0)
 layout_mode = 2
 script = ExtResource("3_h2yge")
-metadata/_tab_index = 2
+metadata/_tab_index = 3
 
 [node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/MarginContainer/TabContainer/Settings"]
 layout_mode = 2
@@ -329,7 +436,7 @@ scroll_following = true
 visible = false
 self_modulate = Color(1, 1, 1, 0)
 layout_mode = 2
-metadata/_tab_index = 3
+metadata/_tab_index = 4
 
 [node name="MarginContainer" type="MarginContainer" parent="PanelContainer/MarginContainer/TabContainer/Info"]
 layout_mode = 2
