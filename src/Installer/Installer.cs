@@ -210,8 +210,12 @@ namespace BepInExInstaller
                     
                     PrintVerbose($"Attempting to find Steam App ID for '{gameName}'...");
                     
-                    string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-                    string steamPath = Path.Combine(home, ".steam", "steam");
+                    string steamPath = SteamPathResolver.ResolveSteamPath();
+                    if (steamPath == null)
+                    {
+                        PrintVerbose("Could not locate Steam installation for Proton configuration.", MessageType.Warning);
+                        return;
+                    }
                     
                     int appId = IDFinder.FindGameID(gameName, steamPath);
                     

@@ -12,6 +12,7 @@ public partial class Uninstall : PanelContainer
 	private OptionButton _uninstallGameOptionButton;
 	private Button _uninstallRecheckGamesButton;
 	private Button _uninstallPickManualButton;
+	private Label _steamWarningLabel;
 	private FileDialog _uninstallFileDialog;
 	private CheckBox _uninstallKeepPluginsCheckbox;
 	private Button _uninstallButton;
@@ -65,6 +66,7 @@ public partial class Uninstall : PanelContainer
 	private void GetUIReferences()
 	{
 		_uninstallGameOptionButton = GetNode<OptionButton>("MarginContainer2/VBoxContainer/OptionButton");
+		_steamWarningLabel = GetNode<Label>("MarginContainer2/VBoxContainer/SteamWarning");
 		_uninstallRecheckGamesButton = GetNode<Button>("MarginContainer2/VBoxContainer/RecheckGames");
 		_uninstallPickManualButton = GetNode<Button>("MarginContainer2/VBoxContainer/pick");
 		_uninstallFileDialog = GetNode<FileDialog>("MarginContainer2/VBoxContainer/FileDialog");
@@ -80,9 +82,11 @@ public partial class Uninstall : PanelContainer
 		_uninstallGameOptionButton.Clear();
 		_uninstallGameOptionButton.AddItem("Loading games...");
 		_uninstallGameOptionButton.Disabled = true;
+		_steamWarningLabel.Visible = false;
 
 		SetVerboseFromSettings(ReadVerboseSetting());
 		StyleResultDialog();
+		UpdateSteamWarning();
 	}
 
 	private void ConnectSignals()
@@ -96,11 +100,13 @@ public partial class Uninstall : PanelContainer
 
 	public void RefreshGames()
 	{
+		UpdateSteamWarning();
 		LoadInstalledBepInExGamesAsync();
 	}
 
 	private async void LoadInstalledBepInExGamesAsync()
 	{
+		UpdateSteamWarning();
 		AppendUninstallLog("[color=cyan]Searching for games with BepInEx installed...[/color]");
 		_uninstallButton.Disabled = true;
 		_uninstallRecheckGamesButton.Disabled = true;
@@ -132,6 +138,14 @@ public partial class Uninstall : PanelContainer
 
 		_uninstallButton.Disabled = false;
 		_uninstallRecheckGamesButton.Disabled = false;
+	}
+
+	private void UpdateSteamWarning()
+	{
+		if (_steamWarningLabel != null)
+		{
+			_steamWarningLabel.Visible = !_installer.HasSteamInstallation();
+		}
 	}
 
 	private void OnUninstallRecheckGamesPressed()

@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://cdnlql3cx4t57"]
+[gd_scene load_steps=9 format=3 uid="uid://cdnlql3cx4t57"]
 
 [ext_resource type="Script" uid="uid://bx00injxbsdqw" path="res://Main.cs" id="1_ig7tw"]
 [ext_resource type="Shader" uid="uid://c2yolgpl3fq76" path="res://lqglass.gdshader" id="2_0xm2m"]
@@ -15,6 +15,8 @@ shader_parameter/u_blur_intensity = 1.2
 shader_parameter/u_opacity = 0.72
 shader_parameter/u_tint_strength = 0.2
 shader_parameter/u_tint_color = Color(0.82, 0.88, 0.94, 1)
+
+[sub_resource type="Theme" id="Theme_7mycd"]
 
 [node name="Control" type="Control"]
 layout_mode = 3
@@ -53,9 +55,10 @@ theme_override_constants/margin_bottom = 5
 
 [node name="TabContainer" type="TabContainer" parent="PanelContainer/MarginContainer"]
 layout_mode = 2
-current_tab = 0
+current_tab = 1
 
 [node name="Install" type="PanelContainer" parent="PanelContainer/MarginContainer/TabContainer"]
+visible = false
 self_modulate = Color(1, 1, 1, 0)
 layout_mode = 2
 script = ExtResource("4_5myhr")
@@ -70,6 +73,11 @@ theme_override_constants/margin_bottom = 5
 
 [node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2"]
 layout_mode = 2
+
+[node name="SteamWarning" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 0, 1)
+text = "Steam not detected! Select it manually in the Settings Tab"
 
 [node name="Select game" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
 layout_mode = 2
@@ -141,6 +149,10 @@ tooltip_text = "Install BepInEx with the selected settings"
 theme_override_colors/font_color = Color(0.55153227, 0.9798047, 0.7516775, 1)
 text = "Install"
 
+[node name="HSeparator2" type="HSeparator" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+theme = SubResource("Theme_7mycd")
+
 [node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
 custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
@@ -163,7 +175,6 @@ title = "Install Result"
 size = Vector2i(560, 260)
 
 [node name="Uninstall" type="PanelContainer" parent="PanelContainer/MarginContainer/TabContainer"]
-visible = false
 self_modulate = Color(1, 1, 1, 0)
 layout_mode = 2
 script = ExtResource("5_d1ahd")
@@ -178,6 +189,11 @@ theme_override_constants/margin_bottom = 5
 
 [node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2"]
 layout_mode = 2
+
+[node name="SteamWarning" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 0, 1)
+text = "Steam not detected! Select it manually in the Settings Tab"
 
 [node name="OptionButton" type="OptionButton" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
 layout_mode = 2
@@ -215,6 +231,10 @@ layout_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.979804, 0.551532, 0.539867, 1)
 text = "Uninstall"
+
+[node name="HSeparator2" type="HSeparator" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+theme = SubResource("Theme_7mycd")
 
 [node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
 custom_minimum_size = Vector2(0, 200)
@@ -261,6 +281,29 @@ layout_mode = 2
 tooltip_text = "Select game from detected Steam games with installed BepInEx"
 text = "Costumize how the App works and what Theme it has"
 
+[node name="HSeparator" type="HSeparator" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer"]
+layout_mode = 2
+theme = SubResource("Theme_7mycd")
+
+[node name="SteamPathLabel" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer"]
+layout_mode = 2
+text = "Steam Location: not set"
+
+[node name="SteamPathButton" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Select Steam Location"
+
+[node name="SteamPathDialog" type="FileDialog" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer"]
+oversampling_override = 1.0
+title = "Select Steam Installation Folder"
+file_mode = 0
+access = 2
+
+[node name="HSeparator2" type="HSeparator" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer"]
+layout_mode = 2
+theme = SubResource("Theme_7mycd")
+
 [node name="pickcolor" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -285,6 +328,10 @@ layout_mode = 2
 size_flags_horizontal = 3
 button_pressed = true
 text = "Transparent Background"
+
+[node name="HSeparator3" type="HSeparator" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer"]
+layout_mode = 2
+theme = SubResource("Theme_7mycd")
 
 [node name="PopupCheck" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer"]
 layout_mode = 2

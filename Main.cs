@@ -1,6 +1,4 @@
 using Godot;
-using System;
-
 public partial class Main : Control
 {
 	private Install _installTab;
@@ -40,6 +38,7 @@ public partial class Main : Control
 	{
 		_installTab.InstallCompleted += OnInstallCompleted;
 		_settingsTab.VerboseSettingChanged += OnVerboseSettingChanged;
+		_settingsTab.SteamPathChanged += OnSteamPathChanged;
 		OnVerboseSettingChanged(_settingsTab.GetVerboseOutputSetting());
 
 		// Info buttons
@@ -58,6 +57,12 @@ public partial class Main : Control
 	{
 		_installTab.SetVerboseFromSettings(enabled);
 		_uninstallTab.SetVerboseFromSettings(enabled);
+	}
+
+	private void OnSteamPathChanged(string steamPath)
+	{
+		_installTab.RefreshGames();
+		_uninstallTab.RefreshGames();
 	}
 
 	public override void _Process(double delta)

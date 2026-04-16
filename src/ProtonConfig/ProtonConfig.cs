@@ -24,8 +24,12 @@ public static class ProtonConfig
         }
 
         // Find Steam and compatdata paths by searching all Steam libraries
-        string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        string steamPath = Path.Combine(home, ".steam", "steam");
+        string steamPath = SteamPathResolver.ResolveSteamPath();
+        if (steamPath == null)
+        {
+            Console.WriteLine("Error: Could not locate Steam installation");
+            return 1;
+        }
 
         // Get all Steam library paths
         List<string> steamLibraries = GetSteamLibraryPaths(steamPath);

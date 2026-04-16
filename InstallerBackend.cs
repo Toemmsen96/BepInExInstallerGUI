@@ -69,6 +69,11 @@ namespace BepInExInstaller
             return await Task.Run(() => GetInstalledGames());
         }
 
+        public bool HasSteamInstallation()
+        {
+            return !string.IsNullOrEmpty(GetSteamPath());
+        }
+
         private List<GameInfo> GetInstalledGames()
         {
             var games = new List<GameInfo>();
@@ -455,8 +460,12 @@ namespace BepInExInstaller
             string gameName = Path.GetFileName(gamePath);
             LogVerbose($"Attempting to find Steam App ID for '{gameName}'...");
             
-            string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            string steamPath = Path.Combine(home, ".steam", "steam");
+            string steamPath = SteamPathResolver.ResolveSteamPath();
+            if (steamPath == null)
+            {
+                LogVerbose("Could not locate Steam installation for Proton configuration.", MessageType.Warning);
+                return;
+            }
             
             int appId = IDFinder.FindGameID(gameName, steamPath);
             
@@ -758,65 +767,13 @@ namespace BepInExInstaller
 
         private string GetSteamPath()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            string steamPath = SteamPathResolver.ResolveSteamPath();
+            if (steamPath != null)
             {
-                string[] commonPaths = new[]
-                {
-                    @"C:\Program Files (x86)\Steam",
-                    @"C:\Program Files\Steam",
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Steam"),
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Steam")
-                };
-
-                foreach (string path in commonPaths)
-                {
-                    if (Directory.Exists(path) && File.Exists(Path.Combine(path, "steam.exe")))
-                    {
-                        LogVerbose($"Found Steam at: {path}");
-                        return path;
-                    }
-                }
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-                string steamPath = Path.Combine(home, ".steam", "steam");
-                
-                if (Directory.Exists(steamPath))
-                {
-                    LogVerbose($"Found Steam at: {steamPath}");
-                    return steamPath;
-                }
-                
-                string[] linuxPaths = new[]
-                {
-                    Path.Combine(home, ".local", "share", "Steam"),
-                    "/usr/share/steam",
-                    "/usr/local/share/steam"
-                };
-                
-                foreach (string path in linuxPaths)
-                {
-                    if (Directory.Exists(path))
-                    {
-                        LogVerbose($"Found Steam at: {path}");
-                        return path;
-                    }
-                }
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-                string steamPath = Path.Combine(home, "Library", "Application Support", "Steam");
-                
-                if (Directory.Exists(steamPath))
-                {
-                    LogVerbose($"Found Steam at: {steamPath}");
-                    return steamPath;
-                }
+                LogVerbose($"Found Steam at: {steamPath}");
             }
 
-            return null;
+            return steamPath;
         }
 
         private List<string> GetSteamLibraryPaths(string steamPath)

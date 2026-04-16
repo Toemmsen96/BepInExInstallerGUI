@@ -11,6 +11,8 @@ public partial class Install : PanelContainer
 	private InstallerBackend _installer;
 	private List<InstallerBackend.GameInfo> _games;
 
+	private Label _steamWarningLabel;
+
 	private OptionButton _gameOptionButton;
 	private Button _recheckGamesButton;
 	private Button _pickManualButton;
@@ -80,6 +82,7 @@ public partial class Install : PanelContainer
 
 	private void GetUIReferences()
 	{
+		_steamWarningLabel = GetNode<Label>("MarginContainer2/VBoxContainer/SteamWarning");
 		_gameOptionButton = GetNode<OptionButton>("MarginContainer2/VBoxContainer/OptionButton");
 		_recheckGamesButton = GetNode<Button>("MarginContainer2/VBoxContainer/RecheckGames");
 		_pickManualButton = GetNode<Button>("MarginContainer2/VBoxContainer/pick");
@@ -107,6 +110,7 @@ public partial class Install : PanelContainer
 		_advancedCommandsLineEdit.Visible = false;
 		_consoleCheckbox.Visible = false;
 		_pickPluginsButton.Visible = false;
+		_steamWarningLabel.Visible = false;
 
 		_gameOptionButton.Clear();
 		_gameOptionButton.AddItem("Loading games...");
@@ -114,6 +118,7 @@ public partial class Install : PanelContainer
 
 		SetVerboseFromSettings(ReadVerboseSetting());
 		StyleResultDialog();
+		UpdateSteamWarning();
 	}
 
 	private void ConnectSignals()
@@ -131,8 +136,14 @@ public partial class Install : PanelContainer
 		_advancedCheckbox.Toggled += OnAdvancedToggled;
 	}
 
+	public void RefreshGames()
+	{
+		LoadGamesAsync();
+	}
+
 	private async void LoadGamesAsync()
 	{
+		UpdateSteamWarning();
 		AppendLog("[color=cyan]Searching for installed Unity games...[/color]");
 		_installButton.Disabled = true;
 		_recheckGamesButton.Disabled = true;
@@ -198,6 +209,14 @@ public partial class Install : PanelContainer
 		_pickManualButton.Visible = false;
 		AppendLog("[color=cyan]Manually selected directory:[/color]");
 		AppendLog($"[color=gray]{dir}[/color]");
+	}
+
+	private void UpdateSteamWarning()
+	{
+		if (_steamWarningLabel != null)
+		{
+			_steamWarningLabel.Visible = !_installer.HasSteamInstallation();
+		}
 	}
 
 	private async void OnInstallPressed()
