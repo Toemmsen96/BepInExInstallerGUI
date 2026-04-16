@@ -17,3 +17,6 @@ mono_crash.*.json
 *.exe
 *.sh
 export/*.zip
+export/linux/*.zip
+export/osx/*.zip
+export/windows/*.zip
