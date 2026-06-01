@@ -8,6 +8,10 @@
 
 config_version=5
 
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
+
 [application]
 
 config/name="BepInExInstaller"
@@ -15,7 +19,7 @@ config/description="GUI Tool to install and uninstall BepInEx into games.
 Detects games from Steam automatically"
 config/version="0.0.1"
 run/main_scene="uid://cdnlql3cx4t57"
-config/features=PackedStringArray("4.5", "C#", "Forward Plus")
+config/features=PackedStringArray("4.6", "C#", "Forward Plus")
 boot_splash/image="uid://dqlsb2q87djm1"
 config/icon="uid://8o700vb55xb7"
 
