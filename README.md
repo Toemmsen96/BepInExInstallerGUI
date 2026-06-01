@@ -9,11 +9,18 @@ GUI - Tool to install BepInEx and plugins into games
 - Automatically Install and Uninstall BepInEx
 - Mono-Based and IL2CPP-Based are supported
 - Adv: Enable Console output, manual options
+- Customization for the Installer
+
+## Video
+This Video shows how to use the Tool with an example for Fallout Shelter:
+https://www.youtube.com/watch?v=egVZXAivM40
 
 ## Pictures
 
 <details>
 <summary>Click to view screenshots</summary>
+
+These are a bit old... Current Version can look different.
 
 ![Install View](.ghreadme/install.png)
 
