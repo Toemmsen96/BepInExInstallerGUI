@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://cdnlql3cx4t57"]
+[gd_scene format=3 uid="uid://cdnlql3cx4t57"]
 
 [ext_resource type="Script" uid="uid://bx00injxbsdqw" path="res://Main.cs" id="1_ig7tw"]
 [ext_resource type="Shader" uid="uid://c2yolgpl3fq76" path="res://lqglass.gdshader" id="2_0xm2m"]
@@ -18,7 +18,7 @@ shader_parameter/u_tint_color = Color(0.82, 0.88, 0.94, 1)
 
 [sub_resource type="Theme" id="Theme_7mycd"]
 
-[node name="Control" type="Control"]
+[node name="Control" type="Control" unique_id=48201140]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -27,7 +27,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ig7tw")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="." unique_id=221872704]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -37,7 +37,7 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0.1310424, 0, 0.15377831, 0.8509804)
 
-[node name="PanelContainer" type="PanelContainer" parent="."]
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=1653136097]
 material = SubResource("ShaderMaterial_0xm2m")
 layout_mode = 1
 anchors_preset = 15
@@ -46,228 +46,231 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="PanelContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=1022168391]
 layout_mode = 2
 theme_override_constants/margin_left = 5
 theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="TabContainer" type="TabContainer" parent="PanelContainer/MarginContainer"]
+[node name="TabContainer" type="TabContainer" parent="PanelContainer/MarginContainer" unique_id=865100097]
 layout_mode = 2
-current_tab = 1
+current_tab = 0
 
-[node name="Install" type="PanelContainer" parent="PanelContainer/MarginContainer/TabContainer"]
-visible = false
+[node name="Install" type="PanelContainer" parent="PanelContainer/MarginContainer/TabContainer" unique_id=1446393797]
 self_modulate = Color(1, 1, 1, 0)
 layout_mode = 2
 script = ExtResource("4_5myhr")
 metadata/_tab_index = 0
 
-[node name="MarginContainer2" type="MarginContainer" parent="PanelContainer/MarginContainer/TabContainer/Install"]
+[node name="MarginContainer2" type="MarginContainer" parent="PanelContainer/MarginContainer/TabContainer/Install" unique_id=1640513015]
 layout_mode = 2
 theme_override_constants/margin_left = 5
 theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2"]
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2" unique_id=1625050321]
 layout_mode = 2
 
-[node name="SteamWarning" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
+[node name="SteamWarning" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=960930727]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 0, 1)
 text = "Steam not detected! Select it manually in the Settings Tab"
 
-[node name="Select game" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
+[node name="Select game" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=351979300]
 layout_mode = 2
 text = "Select game to install to"
 
-[node name="OptionButton" type="OptionButton" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
+[node name="OptionButton" type="OptionButton" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=1144715878]
 layout_mode = 2
 tooltip_text = "Select one from the Steam detected games here to install BepInEx into"
 
-[node name="RecheckGames" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
+[node name="RecheckGames" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=1948242030]
 layout_mode = 2
 tooltip_text = "Install BepInEx with the selected settings"
 text = "Recheck Installed Games"
 
-[node name="pick" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
+[node name="pick" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=2116699864]
 layout_mode = 2
 tooltip_text = "If your game is not detected automatically, select it using the file-dialog"
 text = "Pick Gamefiles manually"
 
-[node name="FileDialog" type="FileDialog" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
+[node name="FileDialog" type="FileDialog" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=1009250213]
 oversampling_override = 1.0
 use_native_dialog = true
 
-[node name="LogCheck" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
+[node name="LogCheck" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=1376653451]
 layout_mode = 2
 tooltip_text = "Toggle if the installer should show logs"
 theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
 button_pressed = true
 text = "Log output"
 
-[node name="PluginsCheckBox2" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
+[node name="PluginsCheckBox2" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=1782809484]
 layout_mode = 2
 tooltip_text = "toggle to select a plugin.zip file containing the .dll files to install"
 theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
 text = "Install Plugins
 "
 
-[node name="FileDialog" type="FileDialog" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer/PluginsCheckBox2"]
+[node name="FileDialog" type="FileDialog" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer/PluginsCheckBox2" unique_id=1336239515]
 oversampling_override = 1.0
-use_native_dialog = true
 title = "Open a File"
 size = Vector2i(600, 400)
 ok_button_text = "Select"
 file_mode = 0
 filters = PackedStringArray("*.zip ; Zip Files")
+use_native_dialog = true
 
-[node name="PickPlugins" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
+[node name="PickPlugins" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=1974007094]
 layout_mode = 2
 tooltip_text = "Select Plugins .zip file to install"
 text = "Select Plugins To install"
 
-[node name="adv" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
+[node name="adv" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=99769368]
 layout_mode = 2
 tooltip_text = "Show advanced options"
 theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
 text = "Advanced Options"
 
-[node name="ConsoleCheckBox" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
+[node name="VersionSelection" type="OptionButton" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=1157403661]
+layout_mode = 2
+
+[node name="ConsoleCheckBox" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=862736003]
 layout_mode = 2
 tooltip_text = "Enable the BepInEx Console to see it's ouput"
 theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
 text = "Enable BepInEx Console"
 
-[node name="cmds" type="LineEdit" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
+[node name="cmds" type="LineEdit" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=1016504143]
 layout_mode = 2
 placeholder_text = "advanced commands here..."
 
-[node name="Install" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
+[node name="Install" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=67074828]
 layout_mode = 2
 tooltip_text = "Install BepInEx with the selected settings"
 theme_override_colors/font_color = Color(0.55153227, 0.9798047, 0.7516775, 1)
 text = "Install"
 
-[node name="HSeparator2" type="HSeparator" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
+[node name="HSeparator2" type="HSeparator" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=1553467281]
 layout_mode = 2
 theme = SubResource("Theme_7mycd")
 
-[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
+[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=1793685684]
 custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
 size_flags_vertical = 3
 tooltip_text = "Installer Logs"
 
-[node name="LogOutput" type="RichTextLabel" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer/ScrollContainer"]
+[node name="LogOutput" type="RichTextLabel" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer/ScrollContainer" unique_id=104152936]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 bbcode_enabled = true
 scroll_following = true
 
-[node name="ProgressBar" type="ProgressBar" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
+[node name="ProgressBar" type="ProgressBar" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=1486155875]
 layout_mode = 2
 
-[node name="ResultDialog" type="AcceptDialog" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer"]
+[node name="ResultDialog" type="AcceptDialog" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=1425337326]
 oversampling_override = 1.0
 title = "Install Result"
 size = Vector2i(560, 260)
 
-[node name="Uninstall" type="PanelContainer" parent="PanelContainer/MarginContainer/TabContainer"]
+[node name="Uninstall" type="PanelContainer" parent="PanelContainer/MarginContainer/TabContainer" unique_id=655819299]
+visible = false
 self_modulate = Color(1, 1, 1, 0)
 layout_mode = 2
 script = ExtResource("5_d1ahd")
 metadata/_tab_index = 1
 
-[node name="MarginContainer2" type="MarginContainer" parent="PanelContainer/MarginContainer/TabContainer/Uninstall"]
+[node name="MarginContainer2" type="MarginContainer" parent="PanelContainer/MarginContainer/TabContainer/Uninstall" unique_id=28616098]
 layout_mode = 2
 theme_override_constants/margin_left = 5
 theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2"]
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2" unique_id=415626792]
 layout_mode = 2
 
-[node name="SteamWarning" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
+[node name="SteamWarning" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer" unique_id=1629615507]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 0, 1)
 text = "Steam not detected! Select it manually in the Settings Tab"
 
-[node name="OptionButton" type="OptionButton" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
+[node name="OptionButton" type="OptionButton" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer" unique_id=351800]
 layout_mode = 2
 
-[node name="RecheckGames" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
+[node name="RecheckGames" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer" unique_id=596841528]
 layout_mode = 2
 tooltip_text = "Install BepInEx with the selected settings"
 text = "Recheck Installed Games"
 
-[node name="pick" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
+[node name="pick" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer" unique_id=1600848450]
 layout_mode = 2
 tooltip_text = "If your game is not detected automatically, select it using the file-dialog"
 text = "Pick Gamefiles manually"
 
-[node name="FileDialog" type="FileDialog" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
+[node name="FileDialog" type="FileDialog" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer" unique_id=70701453]
 oversampling_override = 1.0
 use_native_dialog = true
 
-[node name="KeepPluginsCheck" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
+[node name="KeepPluginsCheck" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer" unique_id=30014391]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
 button_pressed = true
 text = "Keep Plugins"
 
-[node name="adv" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
+[node name="adv" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer" unique_id=1691795777]
 visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
 text = "Advanced Options"
 
-[node name="cmds" type="LineEdit" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
+[node name="cmds" type="LineEdit" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer" unique_id=895462098]
 visible = false
 layout_mode = 2
 
-[node name="Uninstall" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
+[node name="Uninstall" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer" unique_id=14944851]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.979804, 0.551532, 0.539867, 1)
 text = "Uninstall"
 
-[node name="HSeparator2" type="HSeparator" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
+[node name="HSeparator2" type="HSeparator" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer" unique_id=889448509]
 layout_mode = 2
 theme = SubResource("Theme_7mycd")
 
-[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
+[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer" unique_id=2028911870]
 custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="LogOutput" type="RichTextLabel" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer/ScrollContainer"]
+[node name="LogOutput" type="RichTextLabel" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer/ScrollContainer" unique_id=261061275]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 bbcode_enabled = true
 scroll_following = true
 
-[node name="ResultDialog" type="AcceptDialog" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer"]
+[node name="ResultDialog" type="AcceptDialog" parent="PanelContainer/MarginContainer/TabContainer/Uninstall/MarginContainer2/VBoxContainer" unique_id=875577044]
 oversampling_override = 1.0
 title = "Uninstall Result"
 size = Vector2i(560, 260)
 
-[node name="Settings" type="PanelContainer" parent="PanelContainer/MarginContainer/TabContainer"]
+[node name="Settings" type="PanelContainer" parent="PanelContainer/MarginContainer/TabContainer" unique_id=2047964599]
 visible = false
 self_modulate = Color(1, 1, 1, 0)
 layout_mode = 2
 script = ExtResource("3_h2yge")
 metadata/_tab_index = 2
 
-[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/MarginContainer/TabContainer/Settings"]
+[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/MarginContainer/TabContainer/Settings" unique_id=1872113647]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="MarginContainer3" type="MarginContainer" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer"]
+[node name="MarginContainer3" type="MarginContainer" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer" unique_id=1073239579]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/margin_left = 5
@@ -275,45 +278,44 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3"]
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3" unique_id=139052063]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="SettingsInfo" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer"]
+[node name="SettingsInfo" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer" unique_id=1560575358]
 layout_mode = 2
-tooltip_text = "Select game from detected Steam games with installed BepInEx"
 text = "Costumize how the App works and what Theme it has"
 
-[node name="HSeparator" type="HSeparator" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer"]
+[node name="HSeparator" type="HSeparator" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer" unique_id=1832516806]
 layout_mode = 2
 theme = SubResource("Theme_7mycd")
 
-[node name="SteamPathLabel" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer"]
+[node name="SteamPathLabel" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer" unique_id=2021390120]
 layout_mode = 2
 text = "Steam Location: not set"
 
-[node name="SteamPathButton" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer"]
+[node name="SteamPathButton" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer" unique_id=1667521397]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Select Steam Location"
 
-[node name="SteamPathDialog" type="FileDialog" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer"]
+[node name="SteamPathDialog" type="FileDialog" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer" unique_id=1580260235]
 oversampling_override = 1.0
-use_native_dialog = true
-title = "Select Steam Installation Folder"
+title = "Open a File"
 file_mode = 0
 access = 2
+use_native_dialog = true
 
-[node name="HSeparator2" type="HSeparator" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer"]
+[node name="HSeparator2" type="HSeparator" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer" unique_id=2098937664]
 layout_mode = 2
 theme = SubResource("Theme_7mycd")
 
-[node name="pickcolor" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer"]
+[node name="pickcolor" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer" unique_id=2119718115]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Pick App color"
 
-[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer" unique_id=332440822]
 visible = false
 layout_mode = 2
 size_flags_horizontal = 3
@@ -322,124 +324,124 @@ theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
-[node name="ColorPicker" type="ColorPicker" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer/MarginContainer"]
+[node name="ColorPicker" type="ColorPicker" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer/MarginContainer" unique_id=1591154613]
 layout_mode = 2
 size_flags_horizontal = 3
 sliders_visible = false
 
-[node name="TransparentCheck" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer"]
+[node name="TransparentCheck" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer" unique_id=1250973644]
 layout_mode = 2
 size_flags_horizontal = 3
 button_pressed = true
 text = "Transparent Background"
 
-[node name="HSeparator3" type="HSeparator" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer"]
+[node name="HSeparator3" type="HSeparator" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer" unique_id=340065454]
 layout_mode = 2
 theme = SubResource("Theme_7mycd")
 
-[node name="PopupCheck" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer"]
+[node name="PopupCheck" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer" unique_id=1271702691]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
 button_pressed = true
 text = "Show install/uninstall result popups"
 
-[node name="VerboseCheck" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer"]
+[node name="VerboseCheck" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer" unique_id=152912950]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
 button_pressed = true
 text = "Verbose Outputs"
 
-[node name="Reset" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer"]
+[node name="Reset" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer" unique_id=404489600]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.9764706, 0.03137255, 0.18039216, 1)
 text = "Reset Settings"
 
-[node name="ResetConfirmDialog" type="ConfirmationDialog" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer"]
+[node name="ResetConfirmDialog" type="ConfirmationDialog" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer" unique_id=1587900003]
 title = "Confirm Reset"
 size = Vector2i(420, 180)
 ok_button_text = "Reset"
 dialog_text = "Reset all settings to defaults?"
 
-[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer"]
+[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer" unique_id=1040822144]
 custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="LogOutput" type="RichTextLabel" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer/ScrollContainer"]
+[node name="LogOutput" type="RichTextLabel" parent="PanelContainer/MarginContainer/TabContainer/Settings/ScrollContainer/MarginContainer3/VBoxContainer/ScrollContainer" unique_id=1020140361]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 bbcode_enabled = true
 scroll_following = true
 
-[node name="Info" type="PanelContainer" parent="PanelContainer/MarginContainer/TabContainer"]
+[node name="Info" type="PanelContainer" parent="PanelContainer/MarginContainer/TabContainer" unique_id=1828382401]
 visible = false
 self_modulate = Color(1, 1, 1, 0)
 layout_mode = 2
 metadata/_tab_index = 3
 
-[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/MarginContainer/TabContainer/Info"]
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/MarginContainer/TabContainer/Info" unique_id=1544661080]
 layout_mode = 2
 theme_override_constants/margin_left = 5
 theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/TabContainer/Info/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/TabContainer/Info/MarginContainer" unique_id=477630784]
 layout_mode = 2
 
-[node name="CreditsTitle" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Info/MarginContainer/VBoxContainer"]
+[node name="CreditsTitle" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Info/MarginContainer/VBoxContainer" unique_id=434499133]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Credits"
 
-[node name="Credits" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Info/MarginContainer/VBoxContainer"]
+[node name="Credits" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Info/MarginContainer/VBoxContainer" unique_id=852722791]
 layout_mode = 2
 text = "- Toemmsen96:  UI, Linux Support, IL2CPP Support, Complete Rework, Logo Edit
 - aedenthorn: Windows Base
 - ChatGPT: Logo
 "
 
-[node name="MadeWithTitle" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Info/MarginContainer/VBoxContainer"]
+[node name="MadeWithTitle" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Info/MarginContainer/VBoxContainer" unique_id=687880235]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Made With"
 
-[node name="made with" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Info/MarginContainer/VBoxContainer"]
+[node name="made with" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Info/MarginContainer/VBoxContainer" unique_id=330674717]
 layout_mode = 2
 text = "- Godot: UI
 - C#: Code
 "
 
-[node name="Links" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Info/MarginContainer/VBoxContainer"]
+[node name="Links" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Info/MarginContainer/VBoxContainer" unique_id=801841824]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Links and References"
 
-[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/TabContainer/Info/MarginContainer/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/TabContainer/Info/MarginContainer/VBoxContainer" unique_id=926848604]
 layout_mode = 2
 
-[node name="GitHub" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Info/MarginContainer/VBoxContainer/HBoxContainer"]
+[node name="GitHub" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Info/MarginContainer/VBoxContainer/HBoxContainer" unique_id=519265742]
 layout_mode = 2
 text = "GitHub"
 
-[node name="Nexus Mods" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Info/MarginContainer/VBoxContainer/HBoxContainer"]
+[node name="Nexus Mods" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Info/MarginContainer/VBoxContainer/HBoxContainer" unique_id=1367259847]
 layout_mode = 2
 text = "Nexus Mods"
 
-[node name="aedenthorn" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Info/MarginContainer/VBoxContainer/HBoxContainer"]
+[node name="aedenthorn" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Info/MarginContainer/VBoxContainer/HBoxContainer" unique_id=1485012819]
 layout_mode = 2
 text = "aedenthorn"
 
-[node name="BepInEx" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Info/MarginContainer/VBoxContainer/HBoxContainer"]
+[node name="BepInEx" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Info/MarginContainer/VBoxContainer/HBoxContainer" unique_id=891140845]
 layout_mode = 2
 text = "BepInEx"
 
-[node name="TextureRect" type="TextureRect" parent="PanelContainer/MarginContainer/TabContainer/Info/MarginContainer/VBoxContainer"]
+[node name="TextureRect" type="TextureRect" parent="PanelContainer/MarginContainer/TabContainer/Info/MarginContainer/VBoxContainer" unique_id=258897096]
 custom_minimum_size = Vector2(200, 200)
 layout_mode = 2
 texture = ExtResource("6_7mycd")

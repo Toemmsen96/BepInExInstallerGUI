@@ -41,6 +41,8 @@ public static class IDFinder
         // Get all Steam library paths
         List<string> steamLibraries = GetSteamLibraryPaths(steamPath);
 
+        string nameNormalized = Normalize(name);
+
         // Search through all appmanifest files
         foreach (string libraryPath in steamLibraries)
         {
@@ -52,16 +54,21 @@ public static class IDFinder
             {
                 try
                 {
-                    var (appId, gameName) = ParseAppManifest(manifestFile);
-                    
+                    var (appId, gameName, installDir) = ParseAppManifest(manifestFile);
+
                     if (appId > 0 && !string.IsNullOrEmpty(gameName))
                     {
-                        // Add to cache
                         string gameNameLower = gameName.ToLower().Trim();
                         cache[gameNameLower] = appId;
 
-                        // Check if this is the game we're looking for
-                        if (gameNameLower.Contains(nameLower) || nameLower.Contains(gameNameLower))
+                        string gameNameNorm = Normalize(gameName);
+                        string installDirNorm = Normalize(installDir);
+
+                        bool match = gameNameLower.Contains(nameLower) || nameLower.Contains(gameNameLower)
+                            || gameNameNorm.Contains(nameNormalized) || nameNormalized.Contains(gameNameNorm)
+                            || installDirNorm == nameNormalized;
+
+                        if (match)
                         {
                             Util.PrintVerbose($"Found match: '{gameName}' (App ID: {appId})");
                             SaveCache(cache);
@@ -174,19 +181,23 @@ public static class IDFinder
     /// <summary>
     /// Parse an appmanifest file to extract App ID and game name
     /// </summary>
-    private static (int appId, string name) ParseAppManifest(string filePath)
+    private static string Normalize(string s) =>
+        Regex.Replace(s.ToLower(), @"[\s\-_':!]", "");
+
+    private static (int appId, string name, string installDir) ParseAppManifest(string filePath)
     {
         string content = File.ReadAllText(filePath);
 
-        // Extract App ID from filename (appmanifest_XXXXX.acf)
         var filenameMatch = Regex.Match(Path.GetFileName(filePath), @"appmanifest_(\d+)\.acf");
         int appId = filenameMatch.Success ? int.Parse(filenameMatch.Groups[1].Value) : -1;
 
-        // Extract game name from content
         var nameMatch = Regex.Match(content, @"""name""\s*""([^""]+)""", RegexOptions.IgnoreCase);
         string name = nameMatch.Success ? nameMatch.Groups[1].Value : string.Empty;
 
-        return (appId, name);
+        var installDirMatch = Regex.Match(content, @"""installdir""\s*""([^""]+)""", RegexOptions.IgnoreCase);
+        string installDir = installDirMatch.Success ? installDirMatch.Groups[1].Value : string.Empty;
+
+        return (appId, name, installDir);
     }
 
     /// <summary>

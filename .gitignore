@@ -20,3 +20,4 @@ export/*.zip
 export/linux/*.zip
 export/osx/*.zip
 export/windows/*.zip
+*.pck

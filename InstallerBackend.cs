@@ -168,15 +168,79 @@ namespace BepInExInstaller
             return false;
         }
 
+        public class BepInExVersion
+        {
+            public string Tag { get; set; }
+            public string DisplayName { get; set; }
+            public bool IsBleedingEdge { get; set; }
+            public string BuildNumber { get; set; }
+            public string GitHash { get; set; }
+        }
+
+        public async Task<List<BepInExVersion>> GetAvailableVersionsAsync()
+        {
+            return await Task.Run(() =>
+            {
+                var versions = new List<BepInExVersion>();
+                try
+                {
+                    using var client = new HttpClient();
+                    client.DefaultRequestHeaders.Add("User-Agent", "request");
+
+                    // Fetch stable GitHub releases
+                    string releasesJson = client.GetStringAsync("https://api.github.com/repos/BepInEx/BepInEx/releases?per_page=10").Result;
+                    var tagMatches = Regex.Matches(releasesJson, @"""tag_name""\s*:\s*""([^""]+)""");
+                    var preMatches = Regex.Matches(releasesJson, @"""prerelease""\s*:\s*(true|false)");
+
+                    for (int i = 0; i < tagMatches.Count; i++)
+                    {
+                        bool pre = i < preMatches.Count && preMatches[i].Groups[1].Value == "true";
+                        string tag = tagMatches[i].Groups[1].Value;
+                        versions.Add(new BepInExVersion
+                        {
+                            Tag = tag,
+                            DisplayName = pre ? $"{tag} (pre-release)" : tag,
+                            IsBleedingEdge = false
+                        });
+                    }
+
+                    // Fetch bleeding-edge builds
+                    string buildsPage = client.GetStringAsync("https://builds.bepinex.dev/projects/bepinex_be").Result;
+                    var artifactPattern = @"<span class=""artifact-id"">#(\d+)</span>\s*<a class=""hash-button"" href=""[^""]+"">([a-f0-9]+)</a>";
+                    var artifactMatches = Regex.Matches(buildsPage, artifactPattern);
+
+                    foreach (Match m in artifactMatches.Cast<Match>().Take(5))
+                    {
+                        string buildNum = m.Groups[1].Value;
+                        string gitHash = m.Groups[2].Value;
+                        versions.Add(new BepInExVersion
+                        {
+                            Tag = $"be-{buildNum}",
+                            DisplayName = $"Bleeding Edge #{buildNum} ({gitHash[..7]})",
+                            IsBleedingEdge = true,
+                            BuildNumber = buildNum,
+                            GitHash = gitHash
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogError($"Failed to fetch versions: {ex.Message}");
+                }
+
+                return versions;
+            });
+        }
+
         /// <summary>
         /// Install BepInEx to the specified game path
         /// </summary>
-        public async Task<bool> InstallBepInExAsync(string gamePath)
+        public async Task<bool> InstallBepInExAsync(string gamePath, BepInExVersion version = null)
         {
-            return await Task.Run(() => InstallBepInEx(gamePath));
+            return await Task.Run(() => InstallBepInEx(gamePath, version));
         }
 
-        private bool InstallBepInEx(string gamePath)
+        private bool InstallBepInEx(string gamePath, BepInExVersion version = null)
         {
             try
             {
@@ -205,16 +269,23 @@ namespace BepInExInstaller
                 // Check for IL2CPP
                 if (IsIl2CppGame(gamePath))
                 {
-                    return InstallIL2Cpp(gamePath, x64);
+                    return InstallIL2Cpp(gamePath, x64, version);
+                }
+
+                // Bleeding edge requested for Mono game
+                if (version?.IsBleedingEdge == true)
+                {
+                    return InstallBleedingEdgeMono(gamePath, x64, version);
                 }
 
                 // Check for existing zip
                 string zipPath = FindExistingBepInExZip(x64);
-                
+
                 if (zipPath == null)
                 {
-                    Log("Downloading BepInEx from GitHub...");
-                    zipPath = DownloadBepInEx(x64);
+                    string versionTag = version?.Tag;
+                    Log(versionTag != null ? $"Downloading BepInEx {versionTag} from GitHub..." : "Downloading BepInEx from GitHub...");
+                    zipPath = DownloadBepInEx(x64, versionTag);
                     
                     if (zipPath == null)
                     {
@@ -227,43 +298,7 @@ namespace BepInExInstaller
                     Log($"Using existing archive: {Path.GetFileName(zipPath)}");
                 }
 
-                // Extract
-                Log("Installing BepInEx...");
-                OnProgress?.Invoke(0.3f);
-                
-                var archive = ZipFile.OpenRead(zipPath);
-                int totalEntries = archive.Entries.Count;
-                int current = 0;
-                
-                foreach (var entry in archive.Entries)
-                {
-                    string f = Path.Combine(gamePath, entry.FullName);
-                    if (!Directory.Exists(Path.GetDirectoryName(f)))
-                        Directory.CreateDirectory(Path.GetDirectoryName(f));
-                    entry.ExtractToFile(Path.Combine(gamePath, entry.FullName), true);
-                    LogVerbose($"Copying {entry.FullName}");
-                    
-                    current++;
-                    OnProgress?.Invoke(0.3f + (0.5f * current / totalEntries));
-                }
-                archive.Dispose();
-
-                if (!Directory.Exists(Path.Combine(gamePath, "BepInEx", "plugins")))
-                    Directory.CreateDirectory(Path.Combine(gamePath, "BepInEx", "plugins"));
-
-                OnProgress?.Invoke(0.9f);
-                
-                Log($"BepInEx installed to {gamePath}!");
-                
-                if (ConfigureConsole)
-                {
-                    ConfigureBepInExConsole(gamePath);
-                }
-
-                CheckAndConfigureProton(gamePath);
-                
-                OnProgress?.Invoke(1.0f);
-                return true;
+                return ExtractAndFinalize(gamePath, zipPath);
             }
             catch (Exception ex)
             {
@@ -272,79 +307,132 @@ namespace BepInExInstaller
             }
         }
 
-        private bool InstallIL2Cpp(string gamePath, bool x64)
+        private bool InstallBleedingEdgeMono(string gamePath, bool x64, BepInExVersion version)
         {
-            LogVerbose("IL2CPP game detected! Attempting to download BepInEx for IL2CPP...");
-            
+            Log($"Using bleeding edge build #{version.BuildNumber}...");
             try
             {
-                LogVerbose("Finding latest IL2CPP build...");
-                using (HttpClient client = new HttpClient())
+                using var client = new HttpClient();
+                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+
+                string arch = x64 ? "x64" : "x86";
+                string fileName = $"BepInEx-Unity.Mono-win-{arch}-6.0.0-be.{version.BuildNumber}+{version.GitHash}.zip";
+                string fileNameEncoded = fileName.Replace("+", "%2B");
+                string downloadUrl = $"https://builds.bepinex.dev/projects/bepinex_be/{version.BuildNumber}/{fileNameEncoded}";
+
+                Log("Downloading bleeding edge Mono build...");
+                string zipPath = Path.Combine(AppContext.BaseDirectory, fileName);
+                var data = client.GetByteArrayAsync(downloadUrl).Result;
+                File.WriteAllBytes(zipPath, data);
+
+                return ExtractAndFinalize(gamePath, zipPath);
+            }
+            catch (Exception ex)
+            {
+                LogError($"Failed to download bleeding edge Mono build: {ex.Message}");
+                return false;
+            }
+        }
+
+        private bool ExtractAndFinalize(string gamePath, string zipPath)
+        {
+            Log("Installing BepInEx...");
+            OnProgress?.Invoke(0.3f);
+
+            var archive = ZipFile.OpenRead(zipPath);
+            int totalEntries = archive.Entries.Count;
+            int current = 0;
+
+            foreach (var entry in archive.Entries)
+            {
+                // Directory entries have an empty Name (only FullName with trailing slash)
+                if (string.IsNullOrEmpty(entry.Name))
                 {
-                    client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+                    current++;
+                    continue;
+                }
+
+                string f = Path.Combine(gamePath, entry.FullName);
+                string dir = Path.GetDirectoryName(f);
+
+                if (!Directory.Exists(dir))
+                    Directory.CreateDirectory(dir);
+
+                try
+                {
+                    if (File.Exists(f))
+                        File.Delete(f);
+                    entry.ExtractToFile(f);
+                    LogVerbose($"Copying {entry.FullName}");
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    LogVerbose($"Skipped (access denied): {entry.FullName}", MessageType.Warning);
+                }
+
+                current++;
+                OnProgress?.Invoke(0.3f + (0.5f * current / totalEntries));
+            }
+            archive.Dispose();
+
+            if (!Directory.Exists(Path.Combine(gamePath, "BepInEx", "plugins")))
+                Directory.CreateDirectory(Path.Combine(gamePath, "BepInEx", "plugins"));
+
+            OnProgress?.Invoke(0.9f);
+            Log($"BepInEx installed to {gamePath}!");
+
+            if (ConfigureConsole)
+                ConfigureBepInExConsole(gamePath);
+
+            CheckAndConfigureProton(gamePath);
+            OnProgress?.Invoke(1.0f);
+            return true;
+        }
+
+        private bool InstallIL2Cpp(string gamePath, bool x64, BepInExVersion version = null)
+        {
+            LogVerbose("IL2CPP game detected! Attempting to download BepInEx for IL2CPP...");
+
+            try
+            {
+                using var client = new HttpClient();
+                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+
+                string buildNum, gitHash;
+
+                if (version?.IsBleedingEdge == true)
+                {
+                    buildNum = version.BuildNumber;
+                    gitHash = version.GitHash;
+                    Log($"Using IL2CPP bleeding edge build #{buildNum}...");
+                }
+                else
+                {
+                    LogVerbose("Finding latest IL2CPP build...");
                     string buildsPage = client.GetStringAsync("https://builds.bepinex.dev/projects/bepinex_be").Result;
-                    
                     var artifactPattern = @"<span class=""artifact-id"">#(\d+)</span>\s*<a class=""hash-button"" href=""[^""]+"">([a-f0-9]+)</a>";
                     var artifactMatches = Regex.Matches(buildsPage, artifactPattern);
-                    
+
                     if (artifactMatches.Count == 0)
-                    {
                         throw new Exception("Could not find any build artifacts");
-                    }
-                    
-                    Match latestArtifact = artifactMatches[0];
-                    string buildNum = latestArtifact.Groups[1].Value;
-                    string gitHash = latestArtifact.Groups[2].Value;
-                    
-                    string arch = x64 ? "x64" : "x86";
-                    string fileName = $"BepInEx-Unity.IL2CPP-win-{arch}-6.0.0-be.{buildNum}+{gitHash}.zip";
-                    string fileNameEncoded = fileName.Replace("+", "%2B");
-                    
+
+                    buildNum = artifactMatches[0].Groups[1].Value;
+                    gitHash = artifactMatches[0].Groups[2].Value;
                     LogVerbose($"Found latest IL2CPP build: #{buildNum} ({gitHash})");
-                    
-                    string downloadUrl = $"https://builds.bepinex.dev/projects/bepinex_be/{buildNum}/{fileNameEncoded}";
-                    
-                    Log("Downloading IL2CPP build...");
-                    string il2cppZipPath = Path.Combine(AppContext.BaseDirectory, fileName);
-                    
-                    var data = client.GetByteArrayAsync(downloadUrl).Result;
-                    File.WriteAllBytes(il2cppZipPath, data);
-                    Log("Downloaded IL2CPP build successfully!");
-                    
-                    // Extract
-                    Log("Installing BepInEx IL2CPP...");
-                    var il2cppArchive = ZipFile.OpenRead(il2cppZipPath);
-                    foreach (var entry in il2cppArchive.Entries)
-                    {
-                        if (string.IsNullOrEmpty(entry.Name))
-                            continue;
-                            
-                        string f = Path.Combine(gamePath, entry.FullName);
-                        string dir = Path.GetDirectoryName(f);
-                        
-                        if (!Directory.Exists(dir))
-                            Directory.CreateDirectory(dir);
-                        
-                        if (File.Exists(f))
-                        {
-                            try { File.Delete(f); } catch { }
-                        }
-                        
-                        entry.ExtractToFile(f, true);
-                        LogVerbose($"Copying {entry.FullName}");
-                    }
-                    il2cppArchive.Dispose();
-                    
-                    Log($"BepInEx IL2CPP installed to {gamePath}!");
-                    
-                    if (ConfigureConsole)
-                    {
-                        ConfigureBepInExConsole(gamePath);
-                    }
-                    
-                    CheckAndConfigureProton(gamePath);
-                    return true;
                 }
+
+                string arch = x64 ? "x64" : "x86";
+                string fileName = $"BepInEx-Unity.IL2CPP-win-{arch}-6.0.0-be.{buildNum}+{gitHash}.zip";
+                string fileNameEncoded = fileName.Replace("+", "%2B");
+                string downloadUrl = $"https://builds.bepinex.dev/projects/bepinex_be/{buildNum}/{fileNameEncoded}";
+
+                Log("Downloading IL2CPP build...");
+                string il2cppZipPath = Path.Combine(AppContext.BaseDirectory, fileName);
+                var data = client.GetByteArrayAsync(downloadUrl).Result;
+                File.WriteAllBytes(il2cppZipPath, data);
+                Log("Downloaded IL2CPP build successfully!");
+
+                return ExtractAndFinalize(gamePath, il2cppZipPath);
             }
             catch (Exception ex)
             {
@@ -368,30 +456,33 @@ namespace BepInExInstaller
             return null;
         }
 
-        private string DownloadBepInEx(bool x64)
+        private string DownloadBepInEx(bool x64, string versionTag = null)
         {
             try
             {
-                using (HttpClient client = new HttpClient())
-                {
-                    client.DefaultRequestHeaders.Add("User-Agent", "request");
-                    string source = client.GetStringAsync("https://api.github.com/repos/BepInEx/BepInEx/releases/latest").Result;
-                    var match = Regex.Match(source, "(https://github.com/BepInEx/BepInEx/releases/download/v[^/]+/BepInEx_win_[^\"]*" + (x64 ? "x64" : "x86") + "[^\"]+)\"");
-                    if (!match.Success)
-                    {
-                        LogError("Couldn't find latest BepInEx file.");
-                        return null;
-                    }
+                using var client = new HttpClient();
+                client.DefaultRequestHeaders.Add("User-Agent", "request");
 
-                    string latest = match.Groups[1].Value;
-                    Log($"Downloading {Path.GetFileName(latest)}");
-                    string fileName = Path.GetFileName(latest);
-                    string zipPath = Path.Combine(AppContext.BaseDirectory, fileName);
-                    var data = client.GetByteArrayAsync(latest).Result;
-                    File.WriteAllBytes(zipPath, data);
-                    Log($"Download complete!");
-                    return zipPath;
+                string apiUrl = versionTag != null
+                    ? $"https://api.github.com/repos/BepInEx/BepInEx/releases/tags/{versionTag}"
+                    : "https://api.github.com/repos/BepInEx/BepInEx/releases/latest";
+
+                string source = client.GetStringAsync(apiUrl).Result;
+                var match = Regex.Match(source, "(https://github.com/BepInEx/BepInEx/releases/download/v[^/]+/BepInEx_win_[^\"]*" + (x64 ? "x64" : "x86") + "[^\"]+)\"");
+                if (!match.Success)
+                {
+                    LogError("Couldn't find BepInEx download URL.");
+                    return null;
                 }
+
+                string latest = match.Groups[1].Value;
+                Log($"Downloading {Path.GetFileName(latest)}");
+                string fileName = Path.GetFileName(latest);
+                string zipPath = Path.Combine(AppContext.BaseDirectory, fileName);
+                var data = client.GetByteArrayAsync(latest).Result;
+                File.WriteAllBytes(zipPath, data);
+                Log("Download complete!");
+                return zipPath;
             }
             catch (Exception ex)
             {
@@ -705,7 +796,7 @@ namespace BepInExInstaller
             return true;
         }
 
-        private bool IsIl2CppGame(string gamePath)
+        public bool IsIl2CppGame(string gamePath)
         {
             if (Directory.Exists(Path.Combine(gamePath, "il2cpp_data")))
                 return true;

@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using BepInExInstaller;
 
 public partial class Install : PanelContainer
@@ -24,6 +25,7 @@ public partial class Install : PanelContainer
 	private FileDialog _pluginsFileDialog;
 	private Button _installButton;
 	private CheckBox _advancedCheckbox;
+	private OptionButton _versionOptionButton;
 	private LineEdit _advancedCommandsLineEdit;
 	private ScrollContainer _scrollContainer;
 	private RichTextLabel _logOutput;
@@ -39,6 +41,8 @@ public partial class Install : PanelContainer
 
 	private string _selectedGamePath = null;
 	private string _selectedPluginZipPath = null;
+	private List<InstallerBackend.BepInExVersion> _availableVersions = new();
+	private InstallerBackend.BepInExVersion _selectedVersion = null;
 
 	public override void _Ready()
 	{
@@ -94,6 +98,8 @@ public partial class Install : PanelContainer
 		_pickPluginsButton = GetNode<Button>("MarginContainer2/VBoxContainer/PickPlugins");
 		_installButton = GetNode<Button>("MarginContainer2/VBoxContainer/Install");
 		_advancedCheckbox = GetNode<CheckBox>("MarginContainer2/VBoxContainer/adv");
+		_versionOptionButton = GetNode<OptionButton>("MarginContainer2/VBoxContainer/VersionSelection");
+
 		_advancedCommandsLineEdit = GetNode<LineEdit>("MarginContainer2/VBoxContainer/cmds");
 		_scrollContainer = GetNode<ScrollContainer>("MarginContainer2/VBoxContainer/ScrollContainer");
 		_logOutput = GetNode<RichTextLabel>("MarginContainer2/VBoxContainer/ScrollContainer/LogOutput");
@@ -134,11 +140,46 @@ public partial class Install : PanelContainer
 		_pickPluginsButton.Pressed += () => _pluginsFileDialog.PopupCentered(new Vector2I(600, 400));
 		_pluginsFileDialog.FileSelected += OnPluginFileSelected;
 		_advancedCheckbox.Toggled += OnAdvancedToggled;
+		_versionOptionButton.ItemSelected += OnVersionSelected;
 	}
 
 	public void RefreshGames()
 	{
 		LoadGamesAsync();
+	}
+
+	public async void LoadVersions(string gamePath = null)
+	{
+		_versionOptionButton.Clear();
+		_versionOptionButton.AddItem("Loading versions...");
+		_versionOptionButton.Disabled = true;
+
+		bool isIl2Cpp = gamePath != null && _installer.IsIl2CppGame(gamePath);
+		if (isIl2Cpp)
+			AppendLog("[color=cyan]IL2CPP game detected — only Bleeding Edge builds are available.[/color]");
+
+		var allVersions = await _installer.GetAvailableVersionsAsync();
+		_availableVersions = isIl2Cpp
+			? allVersions.Where(v => v.IsBleedingEdge).ToList()
+			: allVersions;
+
+		_versionOptionButton.Clear();
+
+		if (_availableVersions.Count == 0)
+		{
+			_versionOptionButton.AddItem("Failed to load versions");
+			_versionOptionButton.Disabled = true;
+			AppendLog("[color=yellow]Could not fetch BepInEx versions. Check your internet connection.[/color]");
+			return;
+		}
+
+		foreach (var v in _availableVersions)
+			_versionOptionButton.AddItem(v.DisplayName);
+
+		_versionOptionButton.Selected = 0;
+		_selectedVersion = _availableVersions[0];
+		_versionOptionButton.Disabled = false;
+		AppendLog($"[color=green]Loaded {_availableVersions.Count} BepInEx versions. Default: {_availableVersions[0].DisplayName}[/color]");
 	}
 
 	private async void LoadGamesAsync()
@@ -196,6 +237,7 @@ public partial class Install : PanelContainer
 		_pickManualButton.Visible = false;
 		AppendLog($"[color=cyan]Selected: {game.Name}[/color]");
 		AppendLog($"[color=gray]Path: {_selectedGamePath}[/color]");
+		LoadVersions(_selectedGamePath);
 	}
 
 	private void OnPickManualPressed()
@@ -209,6 +251,7 @@ public partial class Install : PanelContainer
 		_pickManualButton.Visible = false;
 		AppendLog("[color=cyan]Manually selected directory:[/color]");
 		AppendLog($"[color=gray]{dir}[/color]");
+		LoadVersions(_selectedGamePath);
 	}
 
 	private void UpdateSteamWarning()
@@ -234,7 +277,7 @@ public partial class Install : PanelContainer
 
 		AppendLog("[color=cyan]========== Starting Installation ==========[/color]");
 
-		bool success = await _installer.InstallBepInExAsync(_selectedGamePath);
+		bool success = await _installer.InstallBepInExAsync(_selectedGamePath, _selectedVersion);
 		bool pluginSuccess = true;
 
 		if (success)
@@ -369,6 +412,12 @@ public partial class Install : PanelContainer
 	{
 		_advancedCommandsLineEdit.Visible = pressed;
 		_consoleCheckbox.Visible = pressed;
+	}
+
+	private void OnVersionSelected(long index)
+	{
+		if (index >= 0 && index < _availableVersions.Count)
+			_selectedVersion = _availableVersions[(int)index];
 	}
 
 	private void OnPluginsToggled(bool pressed)
