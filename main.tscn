@@ -100,12 +100,20 @@ text = "Pick Gamefiles manually"
 oversampling_override = 1.0
 use_native_dialog = true
 
-[node name="LogCheck" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=1376653451]
+[node name="HSeparator" type="HSeparator" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=906853829]
+self_modulate = Color(1, 1, 1, 0.25)
 layout_mode = 2
-tooltip_text = "Toggle if the installer should show logs"
-theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
-button_pressed = true
-text = "Log output"
+
+[node name="VersionLabel" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=802407621]
+layout_mode = 2
+text = "BepInEx Version:"
+
+[node name="VersionSelection" type="OptionButton" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=1157403661]
+layout_mode = 2
+
+[node name="HSeparator4" type="HSeparator" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=350940037]
+self_modulate = Color(1, 1, 1, 0.25)
+layout_mode = 2
 
 [node name="PluginsCheckBox2" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=1782809484]
 layout_mode = 2
@@ -128,14 +136,15 @@ layout_mode = 2
 tooltip_text = "Select Plugins .zip file to install"
 text = "Select Plugins To install"
 
+[node name="HSeparator3" type="HSeparator" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=151322441]
+self_modulate = Color(1, 1, 1, 0.25)
+layout_mode = 2
+
 [node name="adv" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=99769368]
 layout_mode = 2
 tooltip_text = "Show advanced options"
 theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
 text = "Advanced Options"
-
-[node name="VersionSelection" type="OptionButton" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=1157403661]
-layout_mode = 2
 
 [node name="ConsoleCheckBox" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=862736003]
 layout_mode = 2
@@ -146,6 +155,13 @@ text = "Enable BepInEx Console"
 [node name="cmds" type="LineEdit" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=1016504143]
 layout_mode = 2
 placeholder_text = "advanced commands here..."
+
+[node name="LogCheck" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=1376653451]
+layout_mode = 2
+tooltip_text = "Toggle if the installer should show logs"
+theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
+button_pressed = true
+text = "Log output"
 
 [node name="Install" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=67074828]
 layout_mode = 2
