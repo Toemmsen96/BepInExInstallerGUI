@@ -247,10 +247,19 @@ public partial class Install : PanelContainer
 
 	private void OnDirectorySelected(string dir)
 	{
-		_selectedGamePath = dir;
-		_pickManualButton.Visible = false;
 		AppendLog("[color=cyan]Manually selected directory:[/color]");
 		AppendLog($"[color=gray]{dir}[/color]");
+
+		// Some games nest the real Unity game one folder deeper (e.g. "How To Fish").
+		string resolved = _installer.ResolveGameRoot(dir);
+		if (resolved != null && resolved != dir)
+		{
+			AppendLog($"[color=gray]Found game files in: {resolved}[/color]");
+			dir = resolved;
+		}
+
+		_selectedGamePath = dir;
+		_pickManualButton.Visible = false;
 		LoadVersions(_selectedGamePath);
 	}
 

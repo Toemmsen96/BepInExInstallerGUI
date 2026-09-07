@@ -110,14 +110,18 @@ namespace BepInExInstaller
                                 
                                 if (Directory.Exists(fullPath))
                                 {
+                                    // Some games (e.g. "How To Fish") nest the actual Unity
+                                    // game one folder below the Steam install dir.
+                                    string gameRoot = ResolveGameRoot(fullPath);
+
                                     // Check if it's a Unity game (has .exe and _Data folder)
-                                    if (IsUnityGame(fullPath))
+                                    if (gameRoot != null)
                                     {
                                         games.Add(new GameInfo
                                         {
                                             AppId = appId,
                                             Name = gameName,
-                                            InstallPath = fullPath
+                                            InstallPath = gameRoot
                                         });
                                     }
                                 }
@@ -164,8 +168,45 @@ namespace BepInExInstaller
             {
                 // Ignore errors
             }
-            
+
             return false;
+        }
+
+        /// <summary>
+        /// Resolve the directory that actually contains the Unity game
+        /// (an <c>.exe</c> paired with a matching <c>_Data</c> folder).
+        /// Checks <paramref name="startPath"/> itself first, then one level of
+        /// immediate subdirectories, to handle games such as "How To Fish" that
+        /// nest the real game inside a folder of the same name.
+        /// Returns <c>null</c> when no Unity game can be found.
+        /// </summary>
+        public string ResolveGameRoot(string startPath)
+        {
+            if (string.IsNullOrEmpty(startPath) || !Directory.Exists(startPath))
+                return null;
+
+            if (IsUnityGame(startPath))
+                return startPath;
+
+            try
+            {
+                foreach (string subDir in Directory.GetDirectories(startPath))
+                {
+                    string name = Path.GetFileName(subDir);
+                    // Skip folders that never hold the game itself.
+                    if (name.EndsWith("_Data") || name.Equals("BepInEx", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    if (IsUnityGame(subDir))
+                        return subDir;
+                }
+            }
+            catch
+            {
+                // Ignore errors
+            }
+
+            return null;
         }
 
         public class BepInExVersion
