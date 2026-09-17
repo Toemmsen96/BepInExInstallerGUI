@@ -21,3 +21,4 @@ export/linux/*.zip
 export/osx/*.zip
 export/windows/*.zip
 *.pck
+.vscode/settings.json

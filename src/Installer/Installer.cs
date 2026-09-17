@@ -268,10 +268,47 @@ namespace BepInExInstaller
                     }
                     else
                     {
-                        Console.WriteLine("Invalid App ID. Skipping Proton configuration.");
+                        // No App ID: the game may not be a Steam game at all, so allow a prefix directly
+                        ConfigureProtonPrefixManually();
                     }
                 }
         }
+        }
+
+        /// <summary>
+        /// Configure a Wine/Proton prefix entered by the user. Supports non-Steam prefixes.
+        /// </summary>
+        private static void ConfigureProtonPrefixManually()
+        {
+            Console.WriteLine("No Steam App ID available for this game.");
+            Console.WriteLine("Enter the Wine/Proton prefix path to configure (or press Enter to skip):");
+            Console.WriteLine("This is the directory containing 'drive_c', or a compatdata directory containing 'pfx'.");
+
+            string prefixInput = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(prefixInput))
+            {
+                Console.WriteLine("Skipping Proton configuration.");
+                return;
+            }
+
+            string prefix = ProtonConfig.ProtonConfig.NormalizePrefixPath(prefixInput);
+            if (prefix == null)
+            {
+                Console.WriteLine($"'{prefixInput.Trim()}' is not a valid Wine prefix. Skipping Proton configuration.");
+                return;
+            }
+
+            Console.WriteLine($"Configuring Wine prefix {prefix}...");
+            int result = ProtonConfig.ProtonConfig.ExecuteForPrefix(prefix, "winhttp");
+
+            if (result == 0)
+            {
+                Console.WriteLine("Proton configuration completed successfully!");
+            }
+            else
+            {
+                Console.WriteLine("Proton configuration failed. You may need to configure it manually.");
+            }
         }
 
         public static bool IsIl2CppGame(string gamePath)

@@ -26,6 +26,10 @@ public partial class Install : PanelContainer
 	private Button _installButton;
 	private CheckBox _advancedCheckbox;
 	private OptionButton _versionOptionButton;
+	private CheckBox _protonPrefixCheckbox;
+	private Label _protonPrefixLabel;
+	private Button _pickProtonPrefixButton;
+	private FileDialog _protonPrefixDialog;
 	private LineEdit _advancedCommandsLineEdit;
 	private ScrollContainer _scrollContainer;
 	private RichTextLabel _logOutput;
@@ -43,6 +47,9 @@ public partial class Install : PanelContainer
 	private string _selectedPluginZipPath = null;
 	private List<InstallerBackend.BepInExVersion> _availableVersions = new();
 	private InstallerBackend.BepInExVersion _selectedVersion = null;
+	private string _manualProtonPrefixPath = null;
+	private string _detectedProtonPrefixPath = null;
+	private bool _isLinux;
 
 	public override void _Ready()
 	{
@@ -99,6 +106,10 @@ public partial class Install : PanelContainer
 		_installButton = GetNode<Button>("MarginContainer2/VBoxContainer/Install");
 		_advancedCheckbox = GetNode<CheckBox>("MarginContainer2/VBoxContainer/adv");
 		_versionOptionButton = GetNode<OptionButton>("MarginContainer2/VBoxContainer/VersionSelection");
+		_protonPrefixCheckbox = GetNode<CheckBox>("MarginContainer2/VBoxContainer/ProtonPrefixCheck");
+		_protonPrefixLabel = GetNode<Label>("MarginContainer2/VBoxContainer/ProtonPrefixLabel");
+		_pickProtonPrefixButton = GetNode<Button>("MarginContainer2/VBoxContainer/PickProtonPrefix");
+		_protonPrefixDialog = GetNode<FileDialog>("MarginContainer2/VBoxContainer/ProtonPrefixDialog");
 
 		_advancedCommandsLineEdit = GetNode<LineEdit>("MarginContainer2/VBoxContainer/cmds");
 		_scrollContainer = GetNode<ScrollContainer>("MarginContainer2/VBoxContainer/ScrollContainer");
@@ -113,10 +124,21 @@ public partial class Install : PanelContainer
 		_pluginsFileDialog.Access = FileDialog.AccessEnum.Filesystem;
 		_pluginsFileDialog.Title = "Select Plugins.zip Files to install";
 
+		_protonPrefixDialog.FileMode = FileDialog.FileModeEnum.OpenDir;
+		_protonPrefixDialog.Access = FileDialog.AccessEnum.Filesystem;
+		_protonPrefixDialog.Title = "Select Proton/Wine Prefix";
+
 		_advancedCommandsLineEdit.Visible = false;
 		_consoleCheckbox.Visible = false;
 		_pickPluginsButton.Visible = false;
 		_steamWarningLabel.Visible = false;
+
+		// Proton is Linux-only; hide the whole section elsewhere
+		_isLinux = OS.GetName() == "Linux";
+		_protonPrefixCheckbox.Visible = _isLinux;
+		_protonPrefixLabel.Visible = _isLinux;
+		_pickProtonPrefixButton.Visible = false;
+		UpdateProtonPrefixLabel();
 
 		_gameOptionButton.Clear();
 		_gameOptionButton.AddItem("Loading games...");
@@ -141,6 +163,9 @@ public partial class Install : PanelContainer
 		_pluginsFileDialog.FileSelected += OnPluginFileSelected;
 		_advancedCheckbox.Toggled += OnAdvancedToggled;
 		_versionOptionButton.ItemSelected += OnVersionSelected;
+		_protonPrefixCheckbox.Toggled += OnProtonPrefixToggled;
+		_pickProtonPrefixButton.Pressed += () => _protonPrefixDialog.PopupCentered(new Vector2I(800, 600));
+		_protonPrefixDialog.DirSelected += OnProtonPrefixSelected;
 	}
 
 	public void RefreshGames()
@@ -238,6 +263,7 @@ public partial class Install : PanelContainer
 		AppendLog($"[color=cyan]Selected: {game.Name}[/color]");
 		AppendLog($"[color=gray]Path: {_selectedGamePath}[/color]");
 		LoadVersions(_selectedGamePath);
+		RefreshDetectedProtonPrefix(_selectedGamePath);
 	}
 
 	private void OnPickManualPressed()
@@ -261,6 +287,7 @@ public partial class Install : PanelContainer
 		_selectedGamePath = dir;
 		_pickManualButton.Visible = false;
 		LoadVersions(_selectedGamePath);
+		RefreshDetectedProtonPrefix(_selectedGamePath);
 	}
 
 	private void UpdateSteamWarning()
@@ -276,6 +303,13 @@ public partial class Install : PanelContainer
 		if (string.IsNullOrEmpty(_selectedGamePath))
 		{
 			AppendLog("[color=red]Please select a game first![/color]");
+			return;
+		}
+
+		if (_isLinux && _protonPrefixCheckbox.ButtonPressed && string.IsNullOrEmpty(_manualProtonPrefixPath))
+		{
+			AppendLog("[color=red]Manual Proton prefix is enabled but no prefix was selected.[/color]");
+			AppendLog("[color=yellow]Pick a prefix, or untick the option to detect it from Steam.[/color]");
 			return;
 		}
 
@@ -421,6 +455,83 @@ public partial class Install : PanelContainer
 	{
 		_advancedCommandsLineEdit.Visible = pressed;
 		_consoleCheckbox.Visible = pressed;
+	}
+
+	private void OnProtonPrefixToggled(bool pressed)
+	{
+		_pickProtonPrefixButton.Visible = pressed;
+		_installer.UseManualProtonPrefix = pressed;
+
+		if (pressed)
+		{
+			// Start from the auto-detected prefix so the dialog is only needed to override it
+			if (string.IsNullOrEmpty(_manualProtonPrefixPath) && !string.IsNullOrEmpty(_detectedProtonPrefixPath))
+			{
+				_manualProtonPrefixPath = _detectedProtonPrefixPath;
+				AppendLog($"[color=yellow]Using detected prefix as starting point: {_manualProtonPrefixPath}[/color]");
+			}
+
+			_installer.ManualProtonPrefixPath = _manualProtonPrefixPath;
+
+			if (string.IsNullOrEmpty(_manualProtonPrefixPath))
+				AppendLog("[color=yellow]Manual prefix enabled — select a Wine/Proton prefix directory.[/color]");
+		}
+		else
+		{
+			_installer.ManualProtonPrefixPath = null;
+			AppendLog("[color=yellow]Proton prefix will be detected from Steam automatically.[/color]");
+		}
+
+		UpdateProtonPrefixLabel();
+	}
+
+	private void OnProtonPrefixSelected(string dir)
+	{
+		if (!_installer.IsValidProtonPrefix(dir))
+		{
+			AppendLog($"[color=red]'{dir}' is not a Wine prefix.[/color]");
+			AppendLog("[color=yellow]Select the prefix directory (containing 'drive_c') or a compatdata directory containing 'pfx'.[/color]");
+			return;
+		}
+
+		_manualProtonPrefixPath = dir;
+		_installer.ManualProtonPrefixPath = dir;
+		AppendLog("[color=cyan]Selected Proton/Wine prefix:[/color]");
+		AppendLog($"[color=gray]{dir}[/color]");
+		UpdateProtonPrefixLabel();
+	}
+
+	/// <summary>
+	/// Look up the Steam prefix for the selected game so it can be shown and reused as a default.
+	/// </summary>
+	private async void RefreshDetectedProtonPrefix(string gamePath)
+	{
+		if (!_isLinux)
+			return;
+
+		_detectedProtonPrefixPath = await System.Threading.Tasks.Task.Run(
+			() => _installer.DetectProtonPrefix(gamePath));
+
+		UpdateProtonPrefixLabel();
+	}
+
+	private void UpdateProtonPrefixLabel()
+	{
+		if (!_isLinux || _protonPrefixLabel == null)
+			return;
+
+		if (_protonPrefixCheckbox.ButtonPressed)
+		{
+			_protonPrefixLabel.Text = string.IsNullOrEmpty(_manualProtonPrefixPath)
+				? "Prefix: no prefix selected yet"
+				: $"Prefix: {_manualProtonPrefixPath}";
+		}
+		else
+		{
+			_protonPrefixLabel.Text = string.IsNullOrEmpty(_detectedProtonPrefixPath)
+				? "Prefix: (auto-detected from Steam)"
+				: $"Prefix (auto-detected): {_detectedProtonPrefixPath}";
+		}
 	}
 
 	private void OnVersionSelected(long index)

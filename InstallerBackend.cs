@@ -19,6 +19,18 @@ namespace BepInExInstaller
     {
         public bool Verbose { get; set; } = false;
         public bool ConfigureConsole { get; set; } = false;
+
+        /// <summary>
+        /// When true, the Proton/Wine prefix in <see cref="ManualProtonPrefixPath"/> is configured
+        /// instead of the one auto-detected from Steam. Allows non-Steam prefixes.
+        /// </summary>
+        public bool UseManualProtonPrefix { get; set; } = false;
+
+        /// <summary>
+        /// Wine prefix directory (or a compatdata directory containing one) used when
+        /// <see cref="UseManualProtonPrefix"/> is enabled.
+        /// </summary>
+        public string ManualProtonPrefixPath { get; set; } = null;
         
         // Callbacks for UI updates
         public Action<string> OnLog { get; set; }
@@ -586,27 +598,33 @@ namespace BepInExInstaller
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 return;
-                
+
+            if (UseManualProtonPrefix)
+            {
+                ConfigureManualProtonPrefix();
+                return;
+            }
+
             Log("Linux detected! Attempting to configure Proton...");
-            
+
             string gameName = Path.GetFileName(gamePath);
             LogVerbose($"Attempting to find Steam App ID for '{gameName}'...");
-            
+
             string steamPath = SteamPathResolver.ResolveSteamPath();
             if (steamPath == null)
             {
                 LogVerbose("Could not locate Steam installation for Proton configuration.", MessageType.Warning);
                 return;
             }
-            
+
             int appId = IDFinder.FindGameID(gameName, steamPath);
-            
+
             if (appId > 0)
             {
                 Log($"Found Steam App ID: {appId}");
                 Log("Configuring Proton for this game...");
                 int result = ProtonConfig.ProtonConfig.Execute(appId.ToString(), "winhttp");
-                
+
                 if (result == 0)
                 {
                     Log("Proton configuration completed successfully!");
@@ -620,6 +638,72 @@ namespace BepInExInstaller
             {
                 LogVerbose($"Could not automatically find App ID for '{gameName}'.", MessageType.Warning);
             }
+        }
+
+        private void ConfigureManualProtonPrefix()
+        {
+            if (string.IsNullOrWhiteSpace(ManualProtonPrefixPath))
+            {
+                LogError("Manual Proton prefix is enabled but no prefix was selected.");
+                return;
+            }
+
+            string prefix = ProtonConfig.ProtonConfig.NormalizePrefixPath(ManualProtonPrefixPath);
+            if (prefix == null)
+            {
+                LogError($"'{ManualProtonPrefixPath}' is not a valid Wine prefix. " +
+                         "Select the prefix directory (containing 'drive_c') or a compatdata directory containing 'pfx'.");
+                return;
+            }
+
+            Log($"Configuring manually selected Wine prefix: {prefix}");
+            int result = ProtonConfig.ProtonConfig.ExecuteForPrefix(prefix, "winhttp");
+
+            if (result == 0)
+            {
+                Log("Proton configuration completed successfully!");
+            }
+            else
+            {
+                LogError("Proton configuration failed. You may need to configure it manually using Protontricks.");
+            }
+        }
+
+        /// <summary>
+        /// Try to auto-detect the Steam Proton prefix for a game, without configuring anything.
+        /// Used by the UI to prefill the manual prefix selection.
+        /// </summary>
+        /// <returns>Path to the Wine prefix, or null when it cannot be determined</returns>
+        public string DetectProtonPrefix(string gamePath)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || string.IsNullOrEmpty(gamePath))
+                return null;
+
+            try
+            {
+                string steamPath = SteamPathResolver.ResolveSteamPath();
+                if (steamPath == null)
+                    return null;
+
+                int appId = IDFinder.FindGameID(Path.GetFileName(gamePath), steamPath);
+                if (appId <= 0)
+                    return null;
+
+                return ProtonConfig.ProtonConfig.ResolvePrefixForAppId(appId.ToString());
+            }
+            catch (Exception ex)
+            {
+                LogVerbose($"Could not detect Proton prefix: {ex.Message}", MessageType.Warning);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Check whether a directory can be used as a Wine prefix
+        /// </summary>
+        public bool IsValidProtonPrefix(string path)
+        {
+            return ProtonConfig.ProtonConfig.NormalizePrefixPath(path) != null;
         }
 
         /// <summary>

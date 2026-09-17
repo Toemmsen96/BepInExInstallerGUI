@@ -136,6 +136,36 @@ layout_mode = 2
 tooltip_text = "Select Plugins .zip file to install"
 text = "Select Plugins To install"
 
+[node name="HSeparator5" type="HSeparator" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=1188304472]
+self_modulate = Color(1, 1, 1, 0.25)
+layout_mode = 2
+
+[node name="ProtonPrefixCheck" type="CheckBox" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=1904557361]
+layout_mode = 2
+tooltip_text = "Pick the Wine/Proton prefix yourself instead of detecting it from Steam. Needed for non-Steam games."
+theme_override_colors/font_color = Color(0.8745098, 0.8745098, 0.49803922, 1)
+text = "Select Proton prefix manually"
+
+[node name="ProtonPrefixLabel" type="Label" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=1735002884]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+autowrap_mode = 3
+text = "Prefix: (auto-detected from Steam)"
+
+[node name="PickProtonPrefix" type="Button" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=1046773258]
+layout_mode = 2
+tooltip_text = "Select the Wine prefix directory (containing drive_c) or a compatdata directory containing pfx"
+text = "Select Proton/Wine Prefix"
+
+[node name="ProtonPrefixDialog" type="FileDialog" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=1592448031]
+oversampling_override = 1.0
+title = "Select Proton/Wine Prefix"
+size = Vector2i(800, 600)
+ok_button_text = "Select"
+file_mode = 2
+access = 2
+use_native_dialog = true
+
 [node name="HSeparator3" type="HSeparator" parent="PanelContainer/MarginContainer/TabContainer/Install/MarginContainer2/VBoxContainer" unique_id=151322441]
 self_modulate = Color(1, 1, 1, 0.25)
 layout_mode = 2

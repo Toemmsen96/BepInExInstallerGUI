@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
 namespace BepInExInstaller.ProtonConfig;
@@ -10,7 +11,8 @@ namespace BepInExInstaller.ProtonConfig;
 public static class ProtonConfig
 {
     /// <summary>
-    /// Minimal protontricks implementation - focuses on winhttp override
+    /// Minimal protontricks implementation - focuses on winhttp override.
+    /// Resolves the Wine prefix from the Steam compatdata of the given app.
     /// </summary>
     /// <param name="appId">Steam App ID</param>
     /// <param name="commands">Commands to execute (optional, defaults to "winecfg")</param>
@@ -23,15 +25,107 @@ public static class ProtonConfig
             return 1;
         }
 
-        // Find Steam and compatdata paths by searching all Steam libraries
+        string prefixPath = ResolvePrefixForAppId(appId);
+        if (prefixPath == null)
+            return 1;
+
+        return ExecuteForPrefix(prefixPath, appId, commands);
+    }
+
+    /// <summary>
+    /// Run the same configuration against an explicitly chosen Wine/Proton prefix.
+    /// Works for prefixes that are not managed by Steam at all.
+    /// </summary>
+    /// <param name="prefixPath">Wine prefix directory, or a compatdata directory containing one</param>
+    /// <param name="commands">Commands to execute (optional, defaults to "winecfg")</param>
+    /// <returns>Exit code (0 for success, 1 for error)</returns>
+    public static int ExecuteForPrefix(string prefixPath, params string[] commands)
+    {
+        return ExecuteForPrefix(prefixPath, null, commands);
+    }
+
+    private static int ExecuteForPrefix(string prefixPath, string appId, string[] commands)
+    {
+        string resolvedPrefix = NormalizePrefixPath(prefixPath);
+        if (resolvedPrefix == null)
+        {
+            Console.WriteLine($"Error: '{prefixPath}' is not a valid Wine prefix");
+            Console.WriteLine("Expected a directory containing 'drive_c'/'system.reg', or a compatdata directory containing 'pfx'");
+            return 1;
+        }
+
+        Console.WriteLine($"Using Wine prefix: {resolvedPrefix}");
+
+        // Find a Wine binary: prefer Proton (Steam), fall back to a system Wine install
+        string wineBinary = FindWineBinary(appId);
+        if (wineBinary == null)
+        {
+            Console.WriteLine("Error: Could not find a Wine binary (no Proton installation and no system Wine)");
+            return 1;
+        }
+
+        // Handle the command
+        string[] command;
+        if (commands != null && commands.Length > 0)
+        {
+            command = commands;
+        }
+        else
+        {
+            command = ["winecfg"];
+        }
+
+        // Special handling for winhttp override
+        if (command.Length == 1 && command[0] == "winhttp")
+        {
+            Console.WriteLine("Setting winhttp override...");
+            return SetWinhttpOverride(wineBinary, resolvedPrefix);
+        }
+
+        // Execute other commands via Wine
+        try
+        {
+            List<string> cmd = [wineBinary, .. command];
+            Console.WriteLine($"Executing: {string.Join(" ", cmd)}");
+
+            var processInfo = new ProcessStartInfo
+            {
+                FileName = wineBinary,
+                Arguments = string.Join(" ", command)
+            };
+            processInfo.Environment["WINEPREFIX"] = resolvedPrefix;
+
+            var process = Process.Start(processInfo);
+            if (process != null)
+            {
+                process.WaitForExit();
+                return process.ExitCode;
+            }
+            return 1;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error executing command: {e.Message}");
+            return 1;
+        }
+    }
+
+    /// <summary>
+    /// Locate the Steam compatdata Wine prefix belonging to an App ID.
+    /// </summary>
+    /// <returns>Path to the 'pfx' directory, or null if it could not be found</returns>
+    public static string ResolvePrefixForAppId(string appId)
+    {
+        if (string.IsNullOrEmpty(appId))
+            return null;
+
         string steamPath = SteamPathResolver.ResolveSteamPath();
         if (steamPath == null)
         {
             Console.WriteLine("Error: Could not locate Steam installation");
-            return 1;
+            return null;
         }
 
-        // Get all Steam library paths
         List<string> steamLibraries = GetSteamLibraryPaths(steamPath);
 
         string compatdataPath = null;
@@ -54,70 +148,110 @@ public static class ProtonConfig
             {
                 Console.WriteLine($"  - {Path.Combine(lib, "steamapps", "compatdata", appId)}");
             }
-            return 1;
+            return null;
         }
 
-        // Set up Wine prefix environment
         string prefixPath = Path.Combine(compatdataPath, "pfx");
         if (!Directory.Exists(prefixPath))
         {
             Console.WriteLine($"Error: Wine prefix not found at {prefixPath}");
-            return 1;
+            return null;
         }
 
-        // Find Wine binary in any Proton installation
-        string wineBinary = FindProtonWineBinary(steamPath);
+        return prefixPath;
+    }
 
-        if (wineBinary == null)
+    /// <summary>
+    /// Accept either a Wine prefix directory or a compatdata directory holding one,
+    /// and return the actual prefix path. Returns null when neither applies.
+    /// </summary>
+    public static string NormalizePrefixPath(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return null;
+
+        string trimmed = path.Trim();
+        if (!Directory.Exists(trimmed))
+            return null;
+
+        if (IsValidWinePrefix(trimmed))
+            return trimmed;
+
+        // A compatdata directory (or a Steam app id directory) contains the prefix in "pfx"
+        string nestedPfx = Path.Combine(trimmed, "pfx");
+        if (IsValidWinePrefix(nestedPfx))
+            return nestedPfx;
+
+        return null;
+    }
+
+    /// <summary>
+    /// Check whether a directory looks like a Wine prefix
+    /// </summary>
+    public static bool IsValidWinePrefix(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
+            return false;
+
+        return File.Exists(Path.Combine(path, "system.reg")) ||
+               Directory.Exists(Path.Combine(path, "drive_c"));
+    }
+
+    /// <summary>
+    /// Find a usable Wine binary: a Proton build when Steam is available,
+    /// otherwise a system Wine installation.
+    /// </summary>
+    /// <param name="appId">Optional Steam App ID, used to prefer the Proton build that app runs with</param>
+    public static string FindWineBinary(string appId = null)
+    {
+        string steamPath = SteamPathResolver.ResolveSteamPath();
+        if (steamPath != null)
         {
-            Console.WriteLine("Error: Could not find Wine binary in any Proton installation");
-            return 1;
+            string protonWine = FindProtonWineBinary(steamPath, appId);
+            if (protonWine != null)
+                return protonWine;
         }
 
-        // Handle the command
-        string[] command;
-        if (commands != null && commands.Length > 0)
-        {
-            command = commands;
-        }
-        else
-        {
-            command = ["winecfg"];
-        }
+        return FindSystemWineBinary();
+    }
 
-        // Special handling for winhttp override
-        if (command.Length == 1 && command[0] == "winhttp")
-        {
-            Console.WriteLine($"Setting winhttp override for app {appId}...");
-            return SetWinhttpOverride(wineBinary, prefixPath);
-        }
+    /// <summary>
+    /// Find a Wine binary installed system-wide (for non-Steam prefixes)
+    /// </summary>
+    private static string FindSystemWineBinary()
+    {
+        var candidates = new List<string>();
 
-        // Execute other commands via Wine
-        try
+        string pathEnv = Environment.GetEnvironmentVariable("PATH");
+        if (!string.IsNullOrEmpty(pathEnv))
         {
-            List<string> cmd = [wineBinary, .. command];
-            Console.WriteLine($"Executing: {string.Join(" ", cmd)}");
-
-            var processInfo = new ProcessStartInfo
+            foreach (string dir in pathEnv.Split(Path.PathSeparator))
             {
-                FileName = wineBinary,
-                Arguments = string.Join(" ", command)
-            };
-            processInfo.Environment["WINEPREFIX"] = prefixPath;
+                if (string.IsNullOrWhiteSpace(dir))
+                    continue;
 
-            var process = Process.Start(processInfo);
-            if (process != null)
-            {
-                process.WaitForExit();
-                return process.ExitCode;
+                candidates.Add(Path.Combine(dir, "wine64"));
+                candidates.Add(Path.Combine(dir, "wine"));
             }
-            return 1;
         }
-        catch (Exception e)
+
+        // Common locations in case PATH is not inherited (e.g. Flatpak/AppImage launches)
+        candidates.Add("/usr/bin/wine64");
+        candidates.Add("/usr/bin/wine");
+        candidates.Add("/usr/local/bin/wine64");
+        candidates.Add("/usr/local/bin/wine");
+
+        foreach (string candidate in candidates)
         {
-            Console.WriteLine($"Error executing command: {e.Message}");
-            return 1;
+            if (File.Exists(candidate) && IsExecutable(candidate))
+            {
+                Console.WriteLine($"✔ Found system Wine binary: {candidate}");
+                return candidate;
+            }
         }
+
+        Console.WriteLine("✘ No system Wine binary found");
+        return null;
     }
 
     /// <summary>
@@ -162,10 +296,11 @@ public static class ProtonConfig
     /// <summary>
     /// Find Wine binary in any available Proton installation
     /// </summary>
-    private static string FindProtonWineBinary(string steamPath)
+    /// <param name="appId">Optional Steam App ID whose configured Proton build is preferred</param>
+    private static string FindProtonWineBinary(string steamPath, string appId = null)
     {
-        // First, try to find the specific Proton version being used for app 544730
-        string usedProtonPath = FindUsedProtonInstallation(steamPath);
+        // First, try to find the specific Proton version the app is configured to use
+        string usedProtonPath = FindUsedProtonInstallation(steamPath, appId);
         if (usedProtonPath != null)
         {
             string winePath = Path.Combine(usedProtonPath, "dist", "bin", "wine64");
@@ -281,10 +416,14 @@ public static class ProtonConfig
     }
 
     /// <summary>
-    /// Find the specific Proton installation being used for app 544730
+    /// Find the specific Proton installation being used for the given app
     /// </summary>
-    private static string FindUsedProtonInstallation(string steamPath)
+    private static string FindUsedProtonInstallation(string steamPath, string appId)
     {
+        // Without an App ID there is no compatdata to read the version from
+        if (string.IsNullOrEmpty(appId))
+            return null;
+
         try
         {
             // Get all Steam library paths to find the compatdata
@@ -292,7 +431,7 @@ public static class ProtonConfig
 
             foreach (string libraryPath in steamLibraries)
             {
-                string compatdataPath = Path.Combine(libraryPath, "steamapps", "compatdata", "544730");
+                string compatdataPath = Path.Combine(libraryPath, "steamapps", "compatdata", appId);
                 string versionFile = Path.Combine(compatdataPath, "version");
 
                 if (File.Exists(versionFile))
@@ -638,53 +777,21 @@ public static class ProtonConfig
         if (!File.Exists(path))
             return false;
 
-        // On Unix-like systems, check if the file has execute permission
+        // On Windows there is no execute bit, so existing files count as executable
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            return true;
+
         try
         {
-            var fileInfo = new UnixFileInfo(path);
-            return fileInfo.FileAccessPermissions.HasFlag(UnixFileAccessPermissions.UserExecute) ||
-                   fileInfo.FileAccessPermissions.HasFlag(UnixFileAccessPermissions.GroupExecute) ||
-                   fileInfo.FileAccessPermissions.HasFlag(UnixFileAccessPermissions.OtherExecute);
+            UnixFileMode mode = File.GetUnixFileMode(path);
+            return mode.HasFlag(UnixFileMode.UserExecute) ||
+                   mode.HasFlag(UnixFileMode.GroupExecute) ||
+                   mode.HasFlag(UnixFileMode.OtherExecute);
         }
         catch
         {
-            // Fallback for non-Unix systems or if UnixFileInfo is not available
-            // On Windows, all files are considered "executable"
+            // If the mode cannot be read, fall back to accepting the file
             return true;
         }
     }
-}
-
-/// <summary>
-/// Unix file information for checking execute permissions
-/// </summary>
-internal class UnixFileInfo
-{
-    public UnixFileAccessPermissions FileAccessPermissions { get; }
-
-    public UnixFileInfo(string path)
-    {
-        // This is a simplified implementation
-        // In a real application, you would use proper Unix file permission APIs
-        // or P/Invoke to stat() system call
-        
-        // For now, we'll assume all files are executable on Unix
-        // A proper implementation would use Mono.Unix or similar
-        FileAccessPermissions = UnixFileAccessPermissions.UserExecute;
-    }
-}
-
-[Flags]
-internal enum UnixFileAccessPermissions
-{
-    None = 0,
-    OtherExecute = 1,
-    OtherWrite = 2,
-    OtherRead = 4,
-    GroupExecute = 8,
-    GroupWrite = 16,
-    GroupRead = 32,
-    UserExecute = 64,
-    UserWrite = 128,
-    UserRead = 256
 }
